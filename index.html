@@ -11,6 +11,278 @@
 <meta property="og:type" content="restaurant"><meta property="og:title" content="TSK – The Spice Kitchen, Kokapet"><meta property="og:description" content="TSK – The Spice Kitchen, Kokapet: Andhra and Telangana cooking on Gandipet Main Road, Hyderabad. Dum biryanis, ragi sangati, Konaseema kodi chips and 170+ dishes. Order on WhatsApp or reserve a table. Open daily 11 AM – 11 PM. Call +91 99490 51777."><meta property="og:image" content="https://lh3.googleusercontent.com/d/1rHE_QejESsnPIUgB8b13yVacErJMbpQc=w1200"><meta property="og:url" content="https://tskthespicekitchenkokapet.in/"><link rel="canonical" href="https://tskthespicekitchenkokapet.in/"><meta name="twitter:card" content="summary_large_image">
 <link rel="preload" as="image" href="https://lh3.googleusercontent.com/d/1rHE_QejESsnPIUgB8b13yVacErJMbpQc=w2400-rw" fetchpriority="high">
 <script>(function(d){d.classList.add('js');try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('motion')}catch(e){}})(document.documentElement);</script>
+<script>
+/* Menu from Google Sheets. The page reads the "Menu" and "Sections" tabs of the TSK menu sheet and rebuilds the menu from them.
+   If the sheet can't be read, the last copy this browser saw is used, and failing that the menu built into this page. */
+(function () {
+  'use strict';
+  var SHEET_ID = '1VEYV7BGNcUGx93y3vQiiTNAgh97ABuqoGu65xQgBMzc';
+  var CACHE_KEY = 'tsk.sheetMenu';
+  var POPULAR = ['Popular', 'The dishes our regulars order again and again.'];
+  var S = window.TSK_SHEET = { source: 'built-in', error: null };
+
+  var esc = function (s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var rupee = function (n) { return '₹' + Number(n).toLocaleString('en-IN'); };
+  var txt = function (v) { return v == null ? '' : String(v).trim(); };
+  function num(v) {
+    if (typeof v === 'number') return v;
+    var s = txt(v).replace(/[\s,₹]|rs\.?|inr/gi, '');
+    return /^\d+(\.\d+)?$/.test(s) ? +s : NaN;
+  }
+  function yes(v) {
+    if (v == null || v === '') return true;
+    if (typeof v === 'boolean') return v;
+    return !/^(false|no|n|0|off|hide|hidden)$/i.test(txt(v));
+  }
+  function diet(v) { var s = txt(v).toLowerCase(); return /^n/.test(s) ? 'n' : /^e/.test(s) ? 'e' : 'v'; }
+  function photo(v) {
+    var s = txt(v), m;
+    if (!s) return '';
+    if ((m = s.match(/\/d\/([\w-]{20,})/) || s.match(/[?&]id=([\w-]{20,})/))) return m[1];
+    if (/^[\w-]{20,}$/.test(s)) return s;
+    return /^https?:\/\//.test(s) ? s : '';
+  }
+  function hash(s) { var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(36).toUpperCase(); }
+  function slug(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'section'; }
+  function findCols(labels, want) {
+    var out = {};
+    Object.keys(want).forEach(function (k) { out[k] = -1; labels.forEach(function (l, i) { if (out[k] < 0 && want[k].test(l)) out[k] = i; }); });
+    return out;
+  }
+
+  /* ───── reading the sheet ───── */
+  function table(j, tab) {
+    if (!j || j.status !== 'ok' || !j.table) throw new Error('Sheet tab "' + tab + '" could not be read');
+    return {
+      cols: j.table.cols.map(function (c) { return txt(c.label).toLowerCase(); }),
+      rows: (j.table.rows || []).map(function (r) { return (r.c || []).map(function (c) { return c == null ? null : (c.v != null ? c.v : c.f != null ? c.f : null); }); })
+    };
+  }
+  function gvizUrl(tab, extra) {
+    return 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:json' + (extra || '') + '&headers=1&sheet=' + encodeURIComponent(tab) + '&t=' + Date.now();
+  }
+  var jsonpN = 0;
+  function jsonp(tab) {
+    return new Promise(function (ok, fail) {
+      var cb = '__tskSheet' + (++jsonpN), s = document.createElement('script');
+      var done = function () { delete window[cb]; s.remove(); };
+      var t = setTimeout(function () { done(); fail(new Error('Sheet timed out')); }, 12000);
+      window[cb] = function (j) { clearTimeout(t); done(); ok(j); };
+      s.onerror = function () { clearTimeout(t); done(); fail(new Error('Sheet could not be loaded')); };
+      s.src = gvizUrl(tab, ';responseHandler:' + cb);
+      document.head.appendChild(s);
+    });
+  }
+  function read(tab) {
+    return fetch(gvizUrl(tab), { cache: 'no-store', credentials: 'omit' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(function (t) { return JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1)); })
+      .catch(function () { return jsonp(tab); })
+      .then(function (j) { return table(j, tab); });
+  }
+
+  /* ───── sheet rows -> sections and dishes ───── */
+  // known: item code -> dish name already on the page. When a row was copied and its code left unchanged,
+  // the code stays with the dish it belongs to and the copy gets a new code of its own.
+  function model(menu, sections, known) {
+    var ci = findCols(menu.cols, {
+      section: /^section/, dish: /^dish/, option: /^option/, price: /^price/, type: /^(type|veg|diet)/,
+      show: /(website|show|available)/, popular: /^popular/, photo: /^(photo|image|picture)/, desc: /^desc/, code: /code/
+    });
+    if (ci.section < 0 || ci.dish < 0 || ci.price < 0) throw new Error('The Menu tab needs Section, Dish and Price columns');
+    var cats = [], catIx = {};
+    var cat = function (name, desc) {
+      var k = name.toLowerCase();
+      if (!(k in catIx)) { catIx[k] = cats.length; cats.push([name, desc || '']); }
+      else if (desc && !cats[catIx[k]][1]) cats[catIx[k]][1] = desc;
+      return catIx[k];
+    };
+    if (sections) {
+      var sc = findCols(sections.cols, { name: /^section/, desc: /^desc/ });
+      if (sc.name >= 0) sections.rows.forEach(function (r) { var n = txt(r[sc.name]); if (n) cat(n, sc.desc >= 0 ? txt(r[sc.desc]) : ''); });
+    }
+    var dishes = [], byKey = {}, list = [], owner = {}, used = {};
+    var cell = function (r, k) { return ci[k] >= 0 ? r[ci[k]] : null; };
+    menu.rows.forEach(function (r) {
+      var sec = txt(cell(r, 'section')), name = txt(cell(r, 'dish')), price = num(cell(r, 'price'));
+      if (!sec || !name || !(price >= 0)) return;
+      var c = cat(sec), key = c + '|' + name.toLowerCase(), d = byKey[key];
+      if (!d) { d = byKey[key] = { n: name, c: c, i: '', v: [], h: [], pop: 0 }; dishes.push(d); }
+      var ph = photo(cell(r, 'photo')); if (ph && !d.i) d.i = ph;
+      var ds = txt(cell(r, 'desc')); if (ds && !d.d) d.d = ds;
+      var pp = num(cell(r, 'popular')); if (pp > 0 && !d.pop) d.pop = pp;
+      var opt = txt(cell(r, 'option')), code = txt(cell(r, 'code'));
+      if (!/^[\w-]+$/.test(code)) code = '';
+      var it = { d: d, code: code, auto: 'X' + hash(sec + '|' + name + '|' + opt), opt: opt, price: price, t: diet(cell(r, 'type')), show: yes(cell(r, 'show')) };
+      list.push(it);
+      if (code && (!owner[code] || (known && known[code] === name.toLowerCase() && known[code] !== owner[code].d.n.toLowerCase()))) owner[code] = it;
+    });
+    list.forEach(function (it) { if (it.code && owner[it.code] === it) used[it.code] = 1; });
+    list.forEach(function (it) {
+      var code = it.code && owner[it.code] === it ? it.code : it.auto;
+      if (code !== it.code) { while (used[code]) code += 'B'; used[code] = 1; }
+      (it.show ? it.d.v : it.d.h).push([code, it.opt, it.price, it.t]);
+    });
+    if (!dishes.some(function (d) { return d.v.length; })) throw new Error('The Menu tab has no dishes to show');
+    return { cats: cats, dishes: dishes };
+  }
+
+  /* ───── sections and dishes -> the page ───── */
+  function lh(id, w) { return 'https://lh3.googleusercontent.com/d/' + id + '=w' + w + '-rw'; }
+  function dietMark(t) { return t === 'n' ? ['diet diet--n', 'Non-vegetarian'] : t === 'e' ? ['diet diet--e', 'Contains egg'] : ['diet', 'Vegetarian']; }
+  function addBtn(d) {
+    var v = d.v[0], label = d.n + (v[1] ? ' ' + v[1] : '');
+    return '<span data-buy><button class="add" type="button" data-add="' + esc(v[0]) + '" aria-label="Add ' + esc(label) + ' to your order"><svg class="ico"><use href="#i-plus"/></svg>Add</button></span>';
+  }
+  function vars(d) {
+    if (d.v.length < 2) return '';
+    return '<div class="vars" role="group" aria-label="Choose an option for ' + esc(d.n) + '">' + d.v.map(function (v, i) {
+      return '<button type="button" class="var" data-var="' + i + '" aria-pressed="' + (i === 0) + '">' + esc(v[1]) + '</button>';
+    }).join('') + '</div>';
+  }
+  function card(d, di) {
+    var dm = dietMark(d.v[0][3]), url = /^https?:/.test(d.i);
+    var img = url ? 'src="' + esc(d.i) + '"' : 'src="' + lh(d.i, 800) + '" srcset="' + lh(d.i, 400) + ' 400w, ' + lh(d.i, 800) + ' 800w"';
+    return '<article class="card" data-dish="' + di + '"><button class="card__img" type="button" data-view="' + di + '" aria-label="See details for ' + esc(d.n) + '"><img ' + img +
+      ' sizes="(max-width: 600px) 92vw, (max-width: 1100px) 46vw, 300px" alt="' + esc(d.n) + '" width="800" height="534" loading="lazy" decoding="async"></button><div class="card__body"><h4 class="card__name"><span class="' + dm[0] +
+      '" data-dietmark title="' + dm[1] + '"></span>' + esc(d.n) + '</h4>' + vars(d) + '<div class="card__foot"><span class="price" data-price>' + rupee(d.v[0][2]) + '</span>' + addBtn(d) + '</div></div></article>';
+  }
+  function row(d, di) {
+    var dm = dietMark(d.v[0][3]);
+    return '<div class="row" data-dish="' + di + '"><div class="row__name"><span class="' + dm[0] + '" data-dietmark title="' + dm[1] + '"></span><span>' + esc(d.n) +
+      '</span></div><div class="row__meta">' + vars(d) + '</div><div class="row__right"><span class="price" data-price>' + rupee(d.v[0][2]) + '</span>' + addBtn(d) + '</div></div>';
+  }
+  function block(T, id, name, desc, ids) {
+    var g = ids.filter(function (di) { return T.dishes[di].i; }), l = ids.filter(function (di) { return !T.dishes[di].i; });
+    return '<div class="cat-block" data-cat="' + id + '" id="cat-' + id + '" role="tabpanel" aria-labelledby="tab-' + id + '"><div class="menu__intro"><h3>' + esc(name) + '</h3>' + (desc ? '<p>' + esc(desc) + '</p>' : '') + '</div>' +
+      (g.length ? '<div class="grid-photo">' + g.map(function (di) { return card(T.dishes[di], di); }).join('') + '</div>' : '') +
+      (l.length ? '<div class="list">' + l.map(function (di) { return row(T.dishes[di], di); }).join('') + '</div>' : '') + '</div>\n';
+  }
+  function tab(id, name, n, first) {
+    return '<button class="tab" type="button" role="tab" id="tab-' + id + '" data-tab="' + id + '" aria-selected="' + first + '" aria-controls="cat-' + id + '"' + (first ? '' : ' tabindex="-1"') + '>' + esc(name) + (n ? '<sup>' + n + '</sup>' : '') + '</button>\n';
+  }
+  function renderMenu(T, order, popular) {
+    var tabsEl = document.getElementById('tabs'), list = document.getElementById('menuList');
+    if (!tabsEl || !list) return;
+    var groups = {}, cs = [];
+    order.forEach(function (di) { var c = T.dishes[di].c; if (!groups[c]) { groups[c] = []; cs.push(c); } groups[c].push(di); });
+    cs.sort(function (a, b) { return a - b; });
+    var tabsHtml = '\n' + tab('popular', POPULAR[0], 0, true), html = block(T, 'popular', POPULAR[0], POPULAR[1], popular), seen = { popular: 1 };
+    cs.forEach(function (c) {
+      var id = slug(T.cats[c][0]), k = 2;
+      while (seen[id]) id = slug(T.cats[c][0]) + '-' + (k++);
+      seen[id] = 1;
+      tabsHtml += tab(id, T.cats[c][0], groups[c].length, false);
+      html += block(T, id, T.cats[c][0], T.cats[c][1], groups[c]);
+    });
+    tabsEl.innerHTML = tabsHtml + '        ';
+    Array.prototype.slice.call(list.querySelectorAll('.cat-block')).forEach(function (b) { b.remove(); });
+    list.insertAdjacentHTML('afterbegin', html);
+  }
+  function signatures(T) {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-sig-add]'), function (b) {
+      var d = T.dishes[+b.getAttribute('data-sig-add')], buy = b.parentNode;
+      if (!d || d.x) { buy.style.display = 'none'; return; }
+      buy.style.display = '';
+      var p = buy.querySelector('.sig__price'), dm = dietMark(d.v[0][3]);
+      if (p) p.innerHTML = '<span class="' + dm[0] + '" title="' + dm[1] + '"></span>' + rupee(d.v[0][2]) + (d.v.length > 1 ? ' <small>' + d.v.map(function (v, i) {
+        return (i ? rupee(v[2]) + ' ' : '') + esc(v[1].toLowerCase());
+      }).join(', ') + '</small>' : '');
+      var last = b.lastChild;
+      if (last && last.nodeType === 3) last.nodeValue = d.v.length > 1 ? 'Choose and add' : 'Add to order';
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#spots [data-view]'), function (b) {
+      var d = T.dishes[+b.getAttribute('data-view')], spot = b.closest('.spot');
+      if (!d || d.x) { if (spot) spot.style.display = 'none'; return; }
+      var sm = b.querySelector('small');
+      if (sm) sm.textContent = 'from ' + rupee(d.v[0][2]);
+      b.setAttribute('aria-label', d.n + ', from ' + rupee(d.v[0][2]) + '. See details');
+    });
+  }
+
+  /* Merge the sheet into window.TSK. Dishes already on the page keep their number (matched by item code),
+     so the signatures and the hero photo still point at the right dish. New dishes are added after them. */
+  function apply(raw) {
+    var T = window.TSK;
+    if (!T || !T.dishes) return;
+    if (!S.base) {
+      var pop = document.getElementById('cat-popular');
+      S.base = {
+        dishes: T.dishes.slice(), cats: T.cats.slice(), spots: (T.spots || []).slice(), img: T.img,
+        popular: pop ? Array.prototype.map.call(pop.querySelectorAll('[data-dish]'), function (el) { return +el.getAttribute('data-dish'); }) : []
+      };
+      T.img = function (id, k) { return /^https?:/.test(id) ? id : S.base.img(id, k); };
+    }
+    var base = S.base, codeIx = {}, known = {}, out = base.dishes.map(function () { return null; }), taken = {}, order = [];
+    base.dishes.forEach(function (d, i) { d.v.forEach(function (v) { if (!(v[0] in codeIx)) { codeIx[v[0]] = i; known[v[0]] = d.n.toLowerCase(); } }); });
+    var m = model(raw.menu, raw.sections, known);
+    var cats = m.cats.map(function (c) { return c.slice(); });
+    // A sheet dish takes the place of the page dish with the same item code: first where the name also matches,
+    // then (for a renamed dish) where no other sheet dish carries that page dish's name.
+    var names = {}, slot = m.dishes.map(function () { return -1; });
+    m.dishes.forEach(function (d) { names[d.n.toLowerCase()] = 1; });
+    [true, false].forEach(function (strict) {
+      m.dishes.forEach(function (d, k) {
+        if (slot[k] >= 0) return;
+        var all = d.v.concat(d.h);
+        for (var q = 0; q < all.length; q++) {
+          var j = codeIx[all[q][0]];
+          if (j == null || taken[j]) continue;
+          var bn = base.dishes[j].n.toLowerCase();
+          if (strict ? bn === d.n.toLowerCase() : !names[bn]) { slot[k] = j; taken[j] = 1; break; }
+        }
+      });
+    });
+    m.dishes.forEach(function (d, k) {
+      var ix = slot[k];
+      if (ix < 0) { if (!d.v.length) return; ix = out.length; out.push(null); }
+      var nd = { n: d.n, c: d.c, i: d.i, v: d.v.length ? d.v : base.dishes[ix].v, pop: d.pop };
+      if (d.d) nd.d = d.d;
+      if (!d.v.length) nd.x = 1; else order.push(ix);
+      out[ix] = nd;
+    });
+    out.forEach(function (d, i) {
+      if (d) return;
+      var b = base.dishes[i], name = base.cats[b.c][0].toLowerCase(), c = -1;
+      cats.forEach(function (x, k) { if (c < 0 && x[0].toLowerCase() === name) c = k; });
+      if (c < 0) { c = cats.length; cats.push(base.cats[b.c].slice()); }
+      out[i] = { n: b.n, c: c, i: b.i, v: b.v, d: b.d, x: 1 };
+    });
+    var popular = order.filter(function (di) { return out[di].pop > 0; })
+      .sort(function (a, b) { return out[a].pop - out[b].pop || order.indexOf(a) - order.indexOf(b); });
+    if (!popular.length) popular = base.popular.filter(function (di) { return out[di] && !out[di].x; });
+    T.dishes.length = 0; Array.prototype.push.apply(T.dishes, out);
+    T.cats.length = 0; Array.prototype.push.apply(T.cats, cats);
+    T.spots = base.spots.filter(function (sp) { return out[sp.dish] && !out[sp.dish].x; });
+    renderMenu(T, order, popular);
+    signatures(T);
+    if (window.TSK_MENU_REINIT) window.TSK_MENU_REINIT();
+  }
+
+  function cached() { try { var c = JSON.parse(localStorage.getItem(CACHE_KEY)); return c && c.raw && c.id === SHEET_ID ? c.raw : null; } catch (e) { return null; } }
+  function use(raw, source) {
+    var key = JSON.stringify(raw);
+    if (key === S.key) { S.source = source; return; }
+    try { apply(raw); S.key = key; S.source = source; }
+    catch (e) { S.error = e; if (window.console) console.warn('TSK menu sheet:', e); }
+  }
+  S.beforeMain = function () {
+    S.mainReady = true;
+    var raw = S.fresh || cached();
+    if (raw) use(raw, S.fresh ? 'sheet' : 'cache');
+  };
+  if (!/^[\w-]{20,}$/.test(SHEET_ID) || !window.fetch || !window.Promise) return;
+  S.loading = Promise.all([read('Menu'), read('Sections').catch(function () { return null; })])
+    .then(function (r) {
+      var raw = { menu: r[0], sections: r[1] };
+      model(raw.menu, raw.sections, null); // throws if the sheet can't make a menu, so a broken sheet never replaces a good one
+      S.fresh = raw;
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ id: SHEET_ID, at: Date.now(), raw: raw })); } catch (e) { /* storage unavailable */ }
+      if (S.mainReady) use(raw, 'sheet');
+    })
+    .catch(function (e) { S.error = e; if (window.console) console.warn('TSK menu sheet:', e); });
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Guntur:wght@400;500;600;700&family=Rozha+One&family=Tiro+Telugu&display=swap">
 <style>
 /* Layout concept: a top-down camera over the TSK table. The hero sets the table as you scroll; dark maroon "night" sections carry the signatures; stone-grey sections (the colour of the food photography table) carry the menu and visit details. */
@@ -1247,6 +1519,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 
 <script>var TSK_BIG=["105Bah9mYB4QVIy3Egim06p3cjorzOjJm", "10Y5ju_QUfDQ_nSs1uo0HhxZ4Le3T7GIO", "13SeHs-cR0GcILCoQQ8LMxxCph5NHFFJa", "1AcemECuaj3NHdzLpRZV8cUzIVVxaO9rS", "1JQh0kBSPkNAIgyItXN90y5K-F7jjkxbn", "1RCAFQ-Lekqxk1lZluvPbo9nauNQnO9oS", "1UyTPYQ9LvcmcSEm1IIohrvATM-D1yAVX", "1WBZjdvWc4yfoIk3V089dYuaG7w3g5cqq", "1Xs0_sPNjvDC-A8ygkIpATV7Ka6ZGDUqP", "1rHE_QejESsnPIUgB8b13yVacErJMbpQc", "1uGrs5zE2xfRcH13LVXjAidwl_dOsMc74"];window.TSK={"cats":[["Biryanis","Fragrant rice layered with meat and whole spices, sealed and slow-cooked on dum. Regular serves one; family packs serve two to three."],["Pulaos & rice","Rice and meat or vegetables cooked together with whole spices, plus ragi sangati and steamed rice."],["Combos","Signature pairings: bagara rice with a curry or fry, and ragi sangati with naatukodi pulusu."],["Non-veg starters","Telugu fries and roasts: Konaseema, Karimnagar, Bhimavaram and Orugallu, all on one table."],["Veg starters","Fresh vegetables, paneer and mushrooms, fried and tossed with Telugu spice."],["Indo-Chinese starters","Crispy, saucy and loaded with spice: majestic, manchuria, 65 and more."],["Kebabs","Marinated overnight and roasted in our tandoor."],["Veg tandoor","Paneer and vegetable kebabs off the tandoor."],["Non-veg curries","Telangana chicken and mutton curries, pulusus and North Indian gravies."],["Veg curries","Pappu, gutti vankaya, paneer and more, slow-cooked with aromatic spices."],["Indian breads","Hand-rolled and fire-baked, served warm."],["Noodles & fried rice","Wok-tossed noodles and fried rice for an Indo-Chinese fix."],["Rice specials","Comforting rice plates the way home makes them."],["Soups","Warm up with Telugu spices, from mutton marag to lemon coriander."],["Desserts","Something sweet to finish."],["Drinks","Goli soda, fresh lime soda and more."]],"dishes":[{"n":"Mutton Marag","c":13,"i":"","v":[["SOUP001","",269,"n"]]},{"n":"Mutton Paya","c":13,"i":"","v":[["SOUP002","",269,"n"]]},{"n":"Corn Soup","c":13,"i":"","v":[["SOUP003","Veg",169,"v"],["SOUP004","Chicken",199,"n"]]},{"n":"Manchow Soup","c":13,"i":"","v":[["SOUP005","Veg",189,"v"],["SOUP006","Chicken",219,"n"]]},{"n":"Hot and Sour Soup","c":13,"i":"","v":[["SOUP007","Veg",169,"v"],["SOUP008","Chicken",199,"n"]]},{"n":"Lemon Coriander Soup","c":13,"i":"","v":[["SOUP009","Veg",169,"v"],["SOUP010","Chicken",199,"n"]]},{"n":"Pachi Mirchi Kaju Paneer Vepudu","c":4,"i":"","v":[["VST001","",369,"v"]]},{"n":"Kaju Baby Corn Vepudu","c":4,"i":"","v":[["VST002","",359,"v"]]},{"n":"Golinchina Mushroom","c":4,"i":"1uGrs5zE2xfRcH13LVXjAidwl_dOsMc74","v":[["VST003","",349,"v"]],"d":"Mushrooms pan-roasted the Telangana golinchina way, with onion, green chilli and spices."},{"n":"Chilli Mushroom","c":4,"i":"","v":[["VST004","",349,"v"]]},{"n":"Chitti Garelu","c":4,"i":"19uCEYozxoanBRlFe7Z8Mp-tIt_PpVsaj","v":[["VST005","Plain",199,"v"],["VST006","Tomato",299,"v"]],"d":"Small, crisp urad dal vadas, served plain or with tomato chutney."},{"n":"Crispy Corn with Chilli Pepper","c":4,"i":"","v":[["VST007","",299,"v"]]},{"n":"Babycorn Chilli","c":4,"i":"","v":[["VST008","",349,"v"]]},{"n":"Babycorn 65","c":4,"i":"","v":[["VST009","",349,"v"]]},{"n":"Babycorn Manchuria","c":4,"i":"","v":[["VST010","",349,"v"]]},{"n":"Veg Manchuria","c":4,"i":"","v":[["VST011","",349,"v"]]},{"n":"Gobi 65","c":4,"i":"","v":[["VST012","",349,"v"]]},{"n":"Veg Spring Rolls","c":4,"i":"","v":[["VST013","",349,"v"]]},{"n":"Crispy Veg","c":4,"i":"","v":[["VST014","",349,"v"]]},{"n":"Paneer Chilli","c":4,"i":"","v":[["VST015","",379,"v"]]},{"n":"Paneer 65","c":4,"i":"","v":[["VST016","",379,"v"]]},{"n":"Paneer Manchuria","c":4,"i":"","v":[["VST017","",379,"v"]]},{"n":"Paneer Majestic","c":4,"i":"","v":[["VST018","",379,"v"]]},{"n":"Karimnagar Fried Wings","c":3,"i":"1UyTPYQ9LvcmcSEm1IIohrvATM-D1yAVX","v":[["NST001","",399,"n"]],"d":"Chicken wings in a Telangana red-chilli marinade, fried until the edges crackle."},{"n":"Golinchina Chicken","c":3,"i":"","v":[["NST002","",399,"n"]]},{"n":"Golinchina Mutton Fry","c":3,"i":"","v":[["NST003","Bone",599,"n"],["NST004","Boneless",749,"n"]]},{"n":"TSK Kaju Kodi Vepudu","c":3,"i":"","v":[["NST005","",479,"n"]]},{"n":"Natu Kodi Vepudu","c":3,"i":"","v":[["NST006","",489,"n"]]},{"n":"Konaseema Kodi Chips","c":3,"i":"105Bah9mYB4QVIy3Egim06p3cjorzOjJm","v":[["NST007","",469,"n"]],"d":"Thin strips of chicken fried crisp with curry leaves, green chillies and cashews."},{"n":"Bhimavaram Royyala Vepudu","c":3,"i":"","v":[["NST008","",559,"n"]]},{"n":"Mutton Ghee Roast","c":3,"i":"","v":[["NST009","Bone",599,"n"],["NST010","Boneless",749,"n"]]},{"n":"Egg Chilli","c":3,"i":"","v":[["NST011","",349,"e"]]},{"n":"Egg Majestic","c":3,"i":"","v":[["NST012","",349,"e"]]},{"n":"Egg 65","c":3,"i":"","v":[["NST013","",349,"e"]]},{"n":"Orugallu Fried Fish","c":3,"i":"","v":[["NST014","",589,"n"]]},{"n":"Chicken Kheema Balls","c":3,"i":"","v":[["NST015","",589,"n"]]},{"n":"Pachi Mirchi Kodi Vepudu","c":3,"i":"","v":[["NST016","",399,"n"]]},{"n":"Chitti Garelu & Natu Kodi Shorba","c":3,"i":"","v":[["NST017","",399,"n"]]},{"n":"Chicken Chilli","c":5,"i":"","v":[["CST001","",389,"n"]]},{"n":"Chicken Majestic","c":5,"i":"1GGn3tgOBLi76-mi0XHvb-ukpWEyTXwrU","v":[["CST002","",389,"n"]],"d":"Strips of fried chicken tossed with yoghurt, green chillies and curry leaves, a Hyderabad restaurant classic."},{"n":"Chicken 65","c":5,"i":"","v":[["CST003","",389,"n"]]},{"n":"Chicken Manchuria","c":5,"i":"19JoIsFAy6Ig1z7_NIM66-SRO91LECKVQ","v":[["CST004","",389,"n"]],"d":"Fried chicken tossed in a glossy Manchurian sauce with garlic and spring onion."},{"n":"Apollo Fish","c":5,"i":"1XDMlx-g0mPhaPY1YKGoP7gDvYhOq1yVj","v":[["CST005","",399,"n"]],"d":"Boneless fish fried and tossed with green chillies, curry leaves and a tangy masala."},{"n":"Fish Chilli","c":5,"i":"","v":[["CST006","",399,"n"]]},{"n":"Fish 65","c":5,"i":"","v":[["CST007","",399,"n"]]},{"n":"Kara Kara (Crispy) Prawns","c":5,"i":"1MHF3pi8EYb2mIc15KbWaLo2g3fic_Kzz","v":[["CST008","",449,"n"]],"d":"Prawns fried crunchy outside and juicy inside."},{"n":"Prawns Chilli","c":5,"i":"","v":[["CST009","",449,"n"]]},{"n":"Loose Prawns","c":5,"i":"","v":[["CST010","",449,"n"]]},{"n":"Chicken Lollipops","c":5,"i":"","v":[["CST011","",399,"n"]]},{"n":"Chicken Drum Sticks","c":5,"i":"1ECqubAwX9lKZPXVtBVrPG8Ct_HCH_G3o","v":[["CST012","",399,"n"]],"d":"Chicken drumsticks marinated and fried crisp."},{"n":"Egg Chilli (Chinese)","c":5,"i":"","v":[["CST013","",329,"e"]]},{"n":"Egg 65 (Chinese)","c":5,"i":"","v":[["CST014","",329,"e"]]},{"n":"Egg Manchuria","c":5,"i":"","v":[["CST015","",329,"e"]]},{"n":"Dragon Chicken","c":5,"i":"","v":[["CST016","",429,"n"]]},{"n":"Pepper Chicken","c":5,"i":"","v":[["CST017","",369,"n"]]},{"n":"Chicken Sticks","c":5,"i":"","v":[["CST018","",389,"n"]]},{"n":"Fish Sticks / Fingers","c":5,"i":"1MSlihJfDqfMTgp2C85vaBWEWC5IDQSQZ","v":[["CST019","",389,"n"]],"d":"Crumbed fish fingers, fried golden."},{"n":"Spring Rolls","c":5,"i":"","v":[["CST020","Veg",369,"v"],["CST021","Chicken",399,"n"]]},{"n":"Paneer Kurkure","c":7,"i":"10Y5ju_QUfDQ_nSs1uo0HhxZ4Le3T7GIO","v":[["TVG001","",399,"v"]],"d":"Paneer in a crunchy, spiced coating, fried golden outside and soft within."},{"n":"Paneer Pakoda","c":7,"i":"","v":[["TVG002","",399,"v"]]},{"n":"Tandoor Paneer Tikka","c":7,"i":"","v":[["TVG003","",399,"v"]]},{"n":"Tandoor Paneer Achari","c":7,"i":"","v":[["TVG004","",399,"v"]]},{"n":"Tandoor Paneer Malai","c":7,"i":"","v":[["TVG005","",399,"v"]]},{"n":"Hara Bara Kebab","c":7,"i":"","v":[["TVG006","",399,"v"]]},{"n":"Chicken Malai Kebab","c":6,"i":"1ZdR1J709rrUQBV_hAXTNYBMIdrRXb4fT","v":[["KEB001","",429,"n"]],"d":"Chicken marinated in cream and mild spices, cooked in the tandoor."},{"n":"Tandoor Chicken","c":6,"i":"1DfZnkKW4XxUhWLgegnMKzsYyvpTqjmOC","v":[["KEB002","Half",429,"n"],["KEB003","Full",799,"n"]],"d":"Chicken on the bone in a red tandoori marinade, charred in the clay oven."},{"n":"Chicken Tikka","c":6,"i":"","v":[["KEB004","",419,"n"]]},{"n":"Tangdi Kebab","c":6,"i":"1s3ib7yXNHivo2Ixoi8Vde_abFjqkyAUI","v":[["KEB005","Half",429,"n"],["KEB006","Full",799,"n"]],"d":"Chicken drumsticks marinated in yoghurt and spices, roasted in the tandoor."},{"n":"Fish Tikka","c":6,"i":"","v":[["KEB007","",449,"n"]]},{"n":"Pahadi Chicken Kebab","c":6,"i":"","v":[["KEB008","",429,"n"]]},{"n":"Barwan Tangdi Kebab","c":6,"i":"","v":[["KEB009","Half",549,"n"],["KEB010","Full",849,"n"]]},{"n":"Tandoori Roti","c":10,"i":"","v":[["BRD001","Plain",49,"v"],["BRD002","Butter",59,"v"],["BRD003","Garlic",69,"v"]]},{"n":"Naan","c":10,"i":"1jWvzuvPIXSEYBUkzdcMA4CJ9DSKQB9-A","v":[["BRD004","Plain",49,"v"],["BRD005","Butter",59,"v"],["BRD006","Garlic",69,"v"]],"d":"Leavened bread baked against the wall of the tandoor."},{"n":"Pulka","c":10,"i":"1m6pLqsjKI59pHPTb-0pl3JnCudzR-oEy","v":[["BRD007","",39,"v"]],"d":"Thin whole-wheat flatbread, puffed over the flame."},{"n":"Chapati","c":10,"i":"","v":[["BRD008","",49,"v"]]},{"n":"Lachha Paratha","c":10,"i":"1SXo4Yr56wp30gZ1kUdRrW9aalk0vWKee","v":[["BRD009","",79,"v"]],"d":"Flaky, layered paratha from the tandoor."},{"n":"Stuffed Kulcha","c":10,"i":"1nOXPRmljn_arw8TWSiaSsdS0lzHyTsbx","v":[["BRD010","Veg",99,"v"],["BRD011","Chicken",169,"n"],["BRD012","Mutton",249,"n"]],"d":"Tandoor bread stuffed with a spiced vegetable, chicken or mutton filling."},{"n":"Alu Paratha","c":10,"i":"","v":[["BRD013","",89,"v"]]},{"n":"Tomato Pappu","c":9,"i":"","v":[["IVG001","",299,"v"]]},{"n":"Gutti Vankaya Kura","c":9,"i":"","v":[["IVG002","",299,"v"]]},{"n":"Kaju Tomato Curry","c":9,"i":"","v":[["IVG003","",329,"v"]]},{"n":"Baby Corn Mushroom","c":9,"i":"","v":[["IVG004","",389,"v"]]},{"n":"Paneer Butter Masala","c":9,"i":"","v":[["IVG005","",399,"v"]]},{"n":"Palak Paneer","c":9,"i":"","v":[["IVG006","",399,"v"]]},{"n":"Kadai Paneer","c":9,"i":"1D5Mwp62h_puYnkPQvOgOmZlkFgzfmEGC","v":[["IVG007","",399,"v"]],"d":"Paneer with peppers and onion in a kadai masala."},{"n":"Paneer Chatpata","c":9,"i":"","v":[["IVG008","",399,"v"]]},{"n":"Veg Kadai","c":9,"i":"","v":[["IVG009","",339,"v"]]},{"n":"Veg Chatpata","c":9,"i":"","v":[["IVG010","",339,"v"]]},{"n":"Dal Fry Tadka","c":9,"i":"","v":[["IVG011","",319,"v"]]},{"n":"Methi Chaman","c":9,"i":"","v":[["IVG012","",399,"v"]]},{"n":"Gudla Pulusu","c":8,"i":"","v":[["INV001","",329,"e"]]},{"n":"Telangana Chicken","c":8,"i":"","v":[["INV002","Bone",399,"n"],["INV003","Boneless",459,"n"]]},{"n":"Afghani Chicken","c":8,"i":"","v":[["INV004","",449,"n"]]},{"n":"Naatu Kodi Curry","c":8,"i":"1nIEBvyYKBdVJw7kI7DzQHFxzYIO_xHa0","v":[["INV005","",489,"n"]],"d":"Country chicken slow-cooked in a spicy Telugu gravy."},{"n":"Naatu Kodi Fry","c":8,"i":"","v":[["INV006","",489,"n"]]},{"n":"Telangana Mutton Curry","c":8,"i":"","v":[["INV007","Bone",549,"n"],["INV008","Boneless",699,"n"]]},{"n":"Mutton Keema Koora","c":8,"i":"","v":[["INV009","",599,"n"]]},{"n":"Korameenu Chepala Pulusu","c":8,"i":"","v":[["INV010","",549,"n"]]},{"n":"Egg Bhurji","c":8,"i":"","v":[["INV011","",299,"e"]]},{"n":"Egg Masala","c":8,"i":"","v":[["INV012","",299,"e"]]},{"n":"Egg Omelette","c":8,"i":"","v":[["INV013","",199,"e"]]},{"n":"Kadai Chicken","c":8,"i":"","v":[["INV014","",399,"n"]]},{"n":"Chicken Chatpata","c":8,"i":"","v":[["INV015","",399,"n"]]},{"n":"Chicken Tikka Masala","c":8,"i":"1FDLo3h7JllEiWCECB7t_m-MfwFsVymK2","v":[["INV016","",429,"n"]],"d":"Chicken tikka in a rich tomato and butter masala."},{"n":"Butter Chicken","c":8,"i":"","v":[["INV017","",429,"n"]]},{"n":"Punjabi Chicken","c":8,"i":"","v":[["INV018","",499,"n"]]},{"n":"Chicken Nurjani","c":8,"i":"","v":[["INV019","",499,"n"]]},{"n":"Chicken Chettinad","c":8,"i":"","v":[["INV020","",499,"n"]]},{"n":"Chicken Mughlai","c":8,"i":"","v":[["INV021","",499,"n"]]},{"n":"Mutton Rogan Josh","c":8,"i":"1dKcBVY47MvG5VfcQZNzj97JKlJeksXTf","v":[["INV022","",599,"n"]],"d":"Tender mutton in a deep red, aromatic gravy."},{"n":"Mutton Dalcha","c":8,"i":"","v":[["INV023","",349,"n"]]},{"n":"Veg Pulao","c":1,"i":"","v":[["PUL001","",319,"v"]]},{"n":"Vankaya Vepudu Pulao","c":1,"i":"","v":[["PUL002","",329,"v"]]},{"n":"Paneer Pulao","c":1,"i":"","v":[["PUL003","",389,"v"]]},{"n":"Pachi Mirchi Kaju Paneer Pulao","c":1,"i":"","v":[["PUL004","",399,"v"]]},{"n":"Kaju Pulao","c":1,"i":"","v":[["PUL005","",389,"v"]]},{"n":"Mushroom Pulao","c":1,"i":"","v":[["PUL006","",369,"v"]]},{"n":"Avakaya Kaju Pulao","c":1,"i":"","v":[["PUL007","",419,"v"]]},{"n":"Kodi Guddula Pulao","c":1,"i":"","v":[["PUL008","",349,"e"]]},{"n":"Chicken Pulao","c":1,"i":"1BRenok_oB6JLw3de2SuQoJitrzb3yohz","v":[["PUL009","Bone",399,"n"],["PUL010","Boneless",499,"n"]],"d":"Chicken and rice cooked together with whole spices."},{"n":"TSK Mutton Pulao","c":1,"i":"1tVdVRA5wKa_wrEaTwPxx00Th-V7zPOwB","v":[["PUL011","Bone",499,"n"],["PUL012","Boneless",599,"n"]],"d":"Our house mutton pulao: rice and mutton cooked together with whole spices."},{"n":"Kheema Pulao","c":1,"i":"1kS1RlwYBk2b8rDD8Z_oLQa4RYClyxMek","v":[["PUL013","",579,"n"]],"d":"Rice cooked with spiced minced meat."},{"n":"Prawns Pulao","c":1,"i":"","v":[["PUL014","",499,"n"]]},{"n":"Naatu Kodi Pulao","c":1,"i":"","v":[["PUL015","",449,"n"]]},{"n":"Bheemavaram Kodi Pulao","c":1,"i":"","v":[["PUL016","",399,"n"]]},{"n":"Steamed Rice","c":1,"i":"","v":[["PUL017","",149,"v"]]},{"n":"Ragi Sangati","c":1,"i":"","v":[["PUL018","",249,"v"]]},{"n":"Veg Biryani","c":0,"i":"","v":[["BIR001","Regular",319,"v"],["BIR002","Family",629,"v"]]},{"n":"Paneer Biryani","c":0,"i":"","v":[["BIR003","Regular",399,"v"],["BIR004","Family",779,"v"]]},{"n":"TSK Kaju Paneer Biryani","c":0,"i":"","v":[["BIR005","Regular",419,"v"],["BIR006","Family",799,"v"]]},{"n":"Mushroom Biryani","c":0,"i":"","v":[["BIR007","Regular",349,"v"],["BIR008","Family",699,"v"]]},{"n":"Egg Biryani","c":0,"i":"","v":[["BIR009","Regular",349,"e"],["BIR010","Family",699,"e"]]},{"n":"Chicken Dum Biryani","c":0,"i":"1WBZjdvWc4yfoIk3V089dYuaG7w3g5cqq","v":[["BIR011","Regular",389,"n"],["BIR012","Family",779,"n"]],"d":"Basmati layered over marinated chicken, sealed and slow-cooked on dum. Served with raita and salan."},{"n":"Chicken Fry Piece Biryani","c":0,"i":"1WV4lLSpOMhz3Uf5lC-fJ_C5nZRwQkNz7","v":[["BIR013","Regular",399,"n"],["BIR014","Family",789,"n"]],"d":"Biryani rice layered with spicy fried chicken pieces."},{"n":"TSK Boneless Biryani","c":0,"i":"1hIUIXH2vlPdGA5khEhyu0NfYh_Iy0Mo1","v":[["BIR015","Regular",449,"n"],["BIR016","Family",849,"n"]],"d":"Our house biryani with boneless chicken."},{"n":"Naatu Kodi Biryani","c":0,"i":"","v":[["BIR017","Regular",449,"n"],["BIR018","Family",899,"n"]]},{"n":"Mutton Biryani","c":0,"i":"1Xs0_sPNjvDC-A8ygkIpATV7Ka6ZGDUqP","v":[["BIR019","Regular",499,"n"],["BIR020","Family",949,"n"]],"d":"Hyderabadi dum biryani with tender mutton on the bone."},{"n":"TSK Boneless Mutton Biryani","c":0,"i":"","v":[["BIR021","Regular",599,"n"],["BIR022","Family",1099,"n"]]},{"n":"Keema Biryani","c":0,"i":"","v":[["BIR023","Regular",599,"n"],["BIR024","Family",1049,"n"]]},{"n":"Prawns Biryani","c":0,"i":"1iB3Fn8BYA167YhudWrwVItgoVC7u_WJP","v":[["BIR025","Regular",459,"n"],["BIR026","Family",899,"n"]],"d":"Biryani rice layered with spiced prawns."},{"n":"Fish Biryani","c":0,"i":"","v":[["BIR027","Regular",429,"n"],["BIR028","Family",819,"n"]]},{"n":"Veg Thali","c":12,"i":"","v":[["RIC001","",349,"v"]]},{"n":"Sambar Rice","c":12,"i":"","v":[["RIC002","Plain",299,"v"],["RIC003","Chicken",349,"n"],["RIC004","Mutton",449,"n"]]},{"n":"Curd Rice","c":12,"i":"","v":[["RIC005","",199,"v"]]},{"n":"Jeera Rice","c":12,"i":"","v":[["RIC006","",299,"v"]]},{"n":"Muddha Pappu Avakai Annam","c":12,"i":"","v":[["RIC007","",359,"v"]]},{"n":"Noodles","c":11,"i":"","v":[["CHR001","Veg",299,"v"],["CHR002","Egg",319,"e"],["CHR003","Chicken",349,"n"]]},{"n":"Fried Rice","c":11,"i":"1o8sqYq9BsJsv2t9Uu7Popp-2C5mtYZo_","v":[["CHR004","Veg",299,"v"],["CHR005","Egg",319,"e"],["CHR006","Chicken",349,"n"]],"d":"Wok-tossed rice with vegetables and spring onion. Choose veg, egg or chicken."},{"n":"Paneer Fried Rice","c":11,"i":"","v":[["CHR007","",349,"v"]]},{"n":"Mixed Fried Rice","c":11,"i":"","v":[["CHR008","Veg",299,"v"],["CHR009","Non-Veg",399,"n"]]},{"n":"Schezwan Fried Rice","c":11,"i":"","v":[["CHR010","Veg",319,"v"],["CHR011","Egg",329,"e"],["CHR012","Chicken",359,"n"]]},{"n":"Schezwan Noodles","c":11,"i":"17eBpLtk3hOkFQbDyyaveJcwtXrJc-Xge","v":[["CHR013","Veg",319,"v"],["CHR014","Egg",329,"e"],["CHR015","Chicken",359,"n"]],"d":"Noodles tossed in a fiery Schezwan sauce. Choose veg, egg or chicken."},{"n":"Bagara Rice with Tomato Fry & Gutti Vankaya","c":2,"i":"","v":[["CMB001","",399,"v"]]},{"n":"Ragi Sangati with Naatukodi Pulusu","c":2,"i":"1JQh0kBSPkNAIgyItXN90y5K-F7jjkxbn","v":[["CMB002","",449,"n"]],"d":"Soft balls of finger millet and rice with a fiery country-chicken curry."},{"n":"Bagara Rice with Chicken Fry","c":2,"i":"","v":[["CMB003","",399,"n"]]},{"n":"Bagara Rice with Pottelu Mamsam","c":2,"i":"","v":[["CMB004","",499,"n"]]},{"n":"Bagara Rice with Mutton Dalcha","c":2,"i":"","v":[["CMB005","",459,"n"]]},{"n":"Apricot Delight","c":14,"i":"1AcemECuaj3NHdzLpRZV8cUzIVVxaO9rS","v":[["DES001","Small",99,"v"],["DES002","Large",199,"v"]],"d":"Stewed apricot under silky cream, topped with chopped nuts and served chilled. Small or large."},{"n":"Carrot Halwa","c":14,"i":"","v":[["DES003","",199,"v"]]},{"n":"Gulab Jamun","c":14,"i":"1pP61Ew4Wr-pxl5PPfa3cLG_68mHP55ux","v":[["DES004","",199,"v"]],"d":"Soft milk dumplings soaked in cardamom syrup."},{"n":"Khubani Ka Meetha","c":14,"i":"13SeHs-cR0GcILCoQQ8LMxxCph5NHFFJa","v":[["DES005","",169,"v"]],"d":"Dried apricots simmered into a sweet, deep-amber compote."},{"n":"Goli Soda","c":15,"i":"","v":[["DRK001","",69,"v"]]},{"n":"Soft Drink","c":15,"i":"","v":[["DRK002","",69,"v"]]},{"n":"Water Bottle","c":15,"i":"","v":[["DRK003","",25,"v"]]},{"n":"Fresh Lemon Soda","c":15,"i":"","v":[["DRK004","Sweet",129,"v"],["DRK005","Salt",129,"v"]]}],"sig":[{"st":"ts","place":"Hyderabad, Telangana","note":"our home city","pt":[214.6,338.9]},{"st":"ap","place":"Konaseema, Godavari delta","note":"400 km from our kitchen","pt":[646.3,439.0]},{"st":"ap","place":"Rayalaseema, Andhra Pradesh","note":"330 km from our kitchen","pt":[272.1,697.7]},{"st":"ts","place":"Karimnagar, Telangana","note":"140 km from our kitchen","pt":[307.9,211.1]},{"st":"ts","place":"Telangana","note":"a Telangana way of cooking","pt":[293.7,289.3]},{"st":"","place":"Kokapet, Hyderabad","note":"from our kitchen","pt":[214.6,338.9]},{"st":"ts","place":"Hyderabad, Telangana","note":"a Hyderabadi favourite","pt":[214.6,338.9]}],"home":[214.6,338.9],"pieces":[{"t":"r","x":21.5,"y":55.1,"w":34.6,"h":14.4,"a":117.0,"push":1.5,"spin":-14,"delay":0.04,"z":2},{"t":"r","x":80.9,"y":40.8,"w":31.4,"h":14.6,"a":116.5,"push":1.5,"spin":16,"delay":0.06,"z":2},{"t":"c","x":36.95,"y":20.15,"r":9.35,"push":1.5,"spin":22,"delay":0.08,"z":2},{"t":"c","x":59.8,"y":27.75,"r":9.3,"push":1.55,"spin":-18,"delay":0.1,"z":2},{"t":"c","x":67.75,"y":77.5,"r":9.95,"push":1.5,"spin":20,"delay":0.12,"z":2},{"t":"c","x":74.4,"y":20.1,"r":5.0,"push":1.8,"spin":30,"delay":0.16,"z":3},{"t":"c","x":28.2,"y":79.95,"r":6.15,"push":1.65,"spin":-24,"delay":0.18,"z":3},{"t":"c","x":33.2,"y":62.45,"r":5.0,"push":1.9,"spin":26,"delay":0.2,"z":3},{"t":"c","x":41.95,"y":81.65,"r":5.2,"push":1.8,"spin":-20,"delay":0.22,"z":3},{"t":"c","x":52.0,"y":78.5,"r":5.1,"push":1.8,"spin":18,"delay":0.24,"z":3},{"t":"c","x":48.8,"y":53.35,"r":11.1,"drop":true,"delay":0.38,"dur":0.42,"z":5}],"spots":[{"dish":132,"x":50.5,"y":50.5},{"dish":121,"x":59.8,"y":27.0},{"dish":28,"x":82.5,"y":42.0},{"dish":151,"x":67.75,"y":77.0},{"dish":147,"x":36.5,"y":19.0,"side":"l"},{"dish":23,"x":23.0,"y":50.0,"side":"l"},{"dish":159,"x":28.2,"y":79.5}],"cover":"1rHE_QejESsnPIUgB8b13yVacErJMbpQc",img:function(id,k){return 'https://lh3.googleusercontent.com/d/'+id+'=w'+({s:160,m:400,l:1200,x:2400}[k]||800)+'-rw';}};</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script><script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+<script>window.TSK_SHEET && TSK_SHEET.beforeMain();</script>
 <script>
 (() => {
   'use strict';
@@ -1369,11 +1642,16 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   }
 
   /* ───────── data: dishes & cart ───────── */
-  const dishes = D.dishes; // {n, c, i, v:[[id, label, price, diet]]}
+  const dishes = D.dishes; // {n, c, i, v:[[id, label, price, diet]], x: 1 when off the menu}
   const byVar = {};
-  dishes.forEach((d, di) => d.v.forEach((v, vi) => { byVar[v[0]] = { d, di, v, vi }; }));
+  function indexVars() {
+    Object.keys(byVar).forEach(k => { delete byVar[k]; });
+    dishes.forEach((d, di) => { if (!d.x) d.v.forEach((v, vi) => { byVar[v[0]] = { d, di, v, vi }; }); });
+  }
+  indexVars();
   let cart = store.get('cart', {});
-  Object.keys(cart).forEach(k => { if (!byVar[k] || !(cart[k] > 0)) delete cart[k]; });
+  const pruneCart = () => Object.keys(cart).forEach(k => { if (!byVar[k] || !(cart[k] > 0)) delete cart[k]; });
+  pruneCart();
   const chosen = {}; // dish index -> variant index
 
   function varLabel(v) { return v[1] ? v[1] : ''; }
@@ -1453,15 +1731,16 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   });
 
   /* ───────── menu: tabs, search, diet ───────── */
-  const tabs = $$('#tabs [role="tab"]');
-  const blocks = $$('#menuList .cat-block');
+  let tabs = $$('#tabs [role="tab"]');
+  let blocks = $$('#menuList .cat-block');
   const q = $('#q'), qClear = $('#qClear');
   let curTab = store.get('tab', 'popular');
   if (!tabs.some(t => t.dataset.tab === curTab)) curTab = 'popular';
   let diet = 'all';
-  const dishEls = $$('#menuList [data-dish]');
+  let dishEls = $$('#menuList [data-dish]');
   const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]/g, ' ');
-  dishEls.forEach(el => { el._name = norm(dishes[+el.dataset.dish].n + ' ' + dishes[+el.dataset.dish].v.map(v => v[1]).join(' ')); el._diets = dishes[+el.dataset.dish].v.map(v => v[3]); });
+  const prepDishEls = () => dishEls.forEach(el => { el._name = norm(dishes[+el.dataset.dish].n + ' ' + dishes[+el.dataset.dish].v.map(v => v[1]).join(' ')); el._diets = dishes[+el.dataset.dish].v.map(v => v[3]); });
+  prepDishEls();
 
   function applyMenu() {
     const term = norm(q.value.trim());
@@ -1508,7 +1787,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
       if (top < bar.getBoundingClientRect().bottom + 10 || top > window.innerHeight * 0.8) goTo($('#menuBar'), false);
     }
   }
-  tabs.forEach((t, i) => {
+  const bindTabs = () => tabs.forEach((t, i) => {
     t.addEventListener('click', () => selectTab(t.dataset.tab, true));
     t.addEventListener('keydown', e => {
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
@@ -1517,6 +1796,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
       n.focus(); selectTab(n.dataset.tab, false);
     });
   });
+  bindTabs();
   $$('[data-tabs-scroll]').forEach(b => b.addEventListener('click', () => { $('#tabs').scrollBy({ left: +b.dataset.tabsScroll * 260, behavior: 'smooth' }); }));
   let qT;
   q.addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(applyMenu, 90); });
@@ -1535,6 +1815,16 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   root.classList.add('menu-js');
   applyMenu();
   dishes.forEach((d, di) => { if (d.v.some(v => cart[v[0]])) syncDishControls(di); });
+  // The menu sheet can arrive after the page has started: rebuild the menu's lists and controls from the new data.
+  window.TSK_MENU_REINIT = () => {
+    indexVars(); pruneCart(); store.set('cart', cart);
+    Object.keys(chosen).forEach(k => { delete chosen[k]; });
+    tabs = $$('#tabs [role="tab"]'); blocks = $$('#menuList .cat-block'); dishEls = $$('#menuList [data-dish]');
+    prepDishEls(); bindTabs();
+    if (!tabs.some(t => t.dataset.tab === curTab)) curTab = 'popular';
+    applyMenu(); renderCart();
+    dishes.forEach((d, di) => { if (!d.x && d.v.some(v => cart[v[0]])) syncDishControls(di); });
+  };
 
   /* ───────── dish quick view ───────── */
   const modal = $('#modal'), scrim = $('#scrim');
