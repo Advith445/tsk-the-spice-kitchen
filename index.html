@@ -443,7 +443,7 @@ html.loaded .loader { pointer-events: none; }
 .menubtn i::before { top: -6px; } .menubtn i::after { top: 6px; }
 .nav__order { padding-inline: 1.2em; }
 
-.sheetnav { position: fixed; inset: 0; z-index: 95; background: var(--raatri); display: flex; flex-direction: column; padding: calc(96px + env(safe-area-inset-top, 0px)) var(--gutter) calc(32px + env(safe-area-inset-bottom, 0px)); visibility: hidden; clip-path: circle(0 at calc(100% - 52px) 42px); transition: clip-path .7s var(--ease), visibility 0s .7s; }
+.sheetnav { position: fixed; inset: 0; z-index: 89; background: var(--raatri); display: flex; flex-direction: column; padding: calc(96px + env(safe-area-inset-top, 0px)) var(--gutter) calc(32px + env(safe-area-inset-bottom, 0px)); visibility: hidden; clip-path: circle(0 at calc(100% - 52px) 42px); transition: clip-path .7s var(--ease), visibility 0s .7s; }
 .sheetnav.is-open { visibility: visible; clip-path: circle(150% at calc(100% - 52px) 42px); transition: clip-path .7s var(--ease); }
 .sheetnav ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .sheetnav a.big { display: block; font-family: var(--f-display); font-size: clamp(2.4rem, 11vw, 3.4rem); line-height: 1.1; text-decoration: none; padding: 4px 0; }
@@ -714,6 +714,7 @@ html.nav-hidden .menu__bar { top: calc(12px + env(safe-area-inset-top, 0px)); }
 .chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; margin: -2px; }
 .chips::-webkit-scrollbar { display: none; }
 .chips--wrap { flex-wrap: wrap; overflow: visible; }
+@media (hover: hover) and (pointer: fine) { #dates { flex-wrap: wrap; overflow: visible; } }
 .chip { flex: none; border: 1px solid rgba(247, 240, 228, .24); background: transparent; color: var(--biyyam); border-radius: 14px; padding: .55em .9em .45em; cursor: pointer; font-size: .95rem; line-height: 1.2; transition: background-color .2s, border-color .2s, color .2s; display: grid; justify-items: center; }
 .chip small { font-size: .74rem; color: rgba(247, 240, 228, .6); }
 .chip b { font-weight: 600; font-size: 1.05rem; }
@@ -869,6 +870,10 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 .toast { position: fixed; z-index: 110; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 24px); opacity: 0; visibility: hidden; pointer-events: none; display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 18px; border-radius: 999px; background: var(--biyyam); color: var(--ink); box-shadow: 0 18px 50px -14px rgba(10, 2, 1, .6); font-weight: 500; transition: transform .45s var(--ease), opacity .3s, visibility 0s .45s; max-width: calc(100vw - 24px); }
 .toast.is-on { transform: translate(-50%, 0); opacity: 1; visibility: visible; pointer-events: auto; transition: transform .45s var(--ease), opacity .3s; }
 .toast span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast.is-on { pointer-events: none; }
+.toast.is-on .btn { pointer-events: auto; }
+.toast.toast--top { top: calc(16px + env(safe-area-inset-top, 0px)); bottom: auto; transform: translate(-50%, -24px); }
+.toast.toast--top.is-on { transform: translate(-50%, 0); }
 .toast .btn { min-height: 38px; }
 
 .dock { position: fixed; z-index: 85; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); display: none; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px; border-radius: 22px; background: rgba(36, 10, 7, .86); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(247, 240, 228, .12); }
@@ -970,6 +975,10 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .card .qty { height: 36px; } .card .qty button { width: 30px; height: 36px; }
   .var { padding: .32em .6em .26em; font-size: .78rem; }
   .rating b { font-size: 3.2rem; }
+  .menu__wa { grid-template-columns: 1fr; }
+  .menu__wa .btn { width: 100%; }
+  .toast { border-radius: 20px; }
+  .toast span { white-space: normal; line-height: 1.35; }
 }
 @media (max-height: 760px) { .hero__cue { display: none; } }
 @media (prefers-reduced-motion: reduce) {
@@ -1579,6 +1588,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   function showToast(msg, withCart = true) {
     toastMsg.textContent = msg;
     toast.querySelector('button').hidden = !withCart;
+    toast.classList.toggle('toast--top', !!document.querySelector('#drawer.is-open, #modal.is-open'));
     toast.classList.add('is-on');
     clearTimeout(toastT);
     toastT = setTimeout(() => toast.classList.remove('is-on'), 3400);
@@ -2084,8 +2094,8 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
       if (cap) cap.textContent = done ? 'Your muggu is finished. Send the request and we will see you soon.' : 'In Telugu homes, a muggu at the door says welcome. Yours draws itself as you book.';
     }
     if (!seen) {
-      const io = new IntersectionObserver(en => { if (en.some(x => x.isIntersecting)) { seen = true; paint(); io.disconnect(); } }, { threshold: 0.4 });
-      io.observe($('#reserve'));
+      const io = new IntersectionObserver(en => { if (en.some(x => x.isIntersecting)) { seen = true; paint(); io.disconnect(); } }, { rootMargin: '0px 0px -35% 0px' });
+      io.observe($('#bookForm'));
     }
     return { update(s) { state = s; paint(); } };
   })();
