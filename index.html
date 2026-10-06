@@ -2049,7 +2049,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
       $('#bPhone').value.trim() ? `Phone: ${$('#bPhone').value.trim()}` : '',
       $('#bNote').value.trim() ? `Note: ${$('#bNote').value.trim()}` : '',
       '', 'Please confirm the booking.'
-    ].filter((l, i, a) => l !== '' || (a[i - 1] !== '' && i > 0)).join('\n');
+    ].filter((l, i, a) => l !== '' || i === 1 || i === a.length - 2).join('\n');
     bookSend.href = `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
   }
   $('#bName').addEventListener('input', () => { summary(); bookHref(); });
