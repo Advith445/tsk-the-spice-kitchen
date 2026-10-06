@@ -521,7 +521,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 /* ───────────── faq ───────────── */
 .faq { background: var(--rayi); color: var(--ink); color-scheme: light; padding-block: 0 clamp(90px, 11vw, 150px); }
 .faq__grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 40px; padding-top: clamp(50px, 6vw, 80px); border-top: 1px solid var(--line-light); }
-.faq h2 { font-family: var(--f-display); font-size: clamp(2.2rem, 4vw, 3.4rem); line-height: 1; }
+.faq h2 { font-family: var(--f-display); font-size: clamp(2.2rem, 4vw, 3.4rem); line-height: 1; position: sticky; top: calc(var(--nav-h) + 40px); align-self: start; }
 .faq details { border-bottom: 1px solid var(--line-light); }
 .faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 0 20px; font-size: 1.15rem; font-weight: 600; }
 .faq summary::-webkit-details-marker { display: none; }
@@ -530,6 +530,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 .faq summary i::after { transform: rotate(90deg); }
 .faq details[open] summary i::after { transform: rotate(0deg); }
 .faq details p { padding: 0 0 24px; color: var(--ink-2); max-width: 44rem; }
+.faq details p a { color: var(--ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 
 /* ───────────── footer ───────────── */
 .foot { background: var(--raatri); padding-block: clamp(70px, 9vw, 120px) calc(40px + env(safe-area-inset-bottom, 0px)); overflow: clip; }
@@ -669,6 +670,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .visit__grid { grid-template-columns: 1fr; }
   .map { min-height: 340px; }
   .faq__grid { grid-template-columns: 1fr; gap: 10px; }
+  .faq h2 { position: static; }
   .modal { grid-template-columns: 1fr; top: auto; bottom: 0; left: 0; width: 100%; max-height: 92svh; border-radius: 26px 26px 0 0; transform: translateY(100%); }
   .modal.is-open { transform: none; }
   .modal__img { min-height: 0; aspect-ratio: 4 / 3; }
@@ -1135,10 +1137,21 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   <div class="wrap faq__grid">
     <h2 id="faq-title">Good to know</h2>
     <div>
+      <details><summary>What kind of food do you serve?<i></i></summary><p>Andhra and Telangana home cooking, Hyderabadi dum biryanis, kebabs from the tandoor, Indo-Chinese starters and noodles, and North Indian curries and breads. That's more than 170 dishes, veg and non-veg. <a href="#menu">See the full menu</a>.</p></details>
       <details><summary>Can you adjust the spice level?<i></i></summary><p>Yes. Andhra food is famously hot, but tell your server or mention it in your order and the kitchen will make it mild, medium or proper Andhra hot.</p></details>
       <details><summary>Do you have vegetarian dishes?<i></i></summary><p>Plenty: golinchina mushroom, chitti garelu, paneer from the tandoor, veg and paneer biryanis, muddha pappu avakai annam, curries and desserts. Use the Veg filter on the menu.</p></details>
+      <details><summary>How many people does a family pack biryani serve?<i></i></summary><p>A regular biryani serves one. A family pack serves two to three. Pick the size when you add a biryani to your order.</p></details>
+      <details><summary>I have a food allergy. What should I do?<i></i></summary><p>Tell your server before you order, or add it to the notes for the kitchen when you order on WhatsApp. Please let us know before we start cooking.</p></details>
+      <details><summary>What are your opening hours?<i></i></summary><p>We're open every day, including weekends, from 11 AM to 11 PM for lunch and dinner.</p></details>
+      <details><summary>Where exactly are you?<i></i></summary><p>Ground Floor, Shop No. 9 &amp; 10, Raichandani Business Bay, Gandipet Main Road, Kokapet. We're minutes from Narsingi, Neopolis, Kokapet SEZ and the Financial District. <a href="https://www.google.com/maps/dir/?api=1&amp;destination=TSK-The+Spice+Kitchen+Kokapet&amp;destination_place_id=ChIJvzax7L6VyzsRnm5pEhH_cTI" target="_blank" rel="noopener">Get directions</a>.</p></details>
+      <details><summary>How do I book a table?<i></i></summary><p>Use the <a href="#reserve">Reserve a table</a> form: choose a day, a time and how many of you are coming, and the request opens in WhatsApp. Your booking is confirmed once our team replies there. We hold tables for 15 minutes.</p></details>
+      <details><summary>Can you host a large group or an office team?<i></i></summary><p>Yes. The garden room has tables for groups. For 10 or more guests, please call us on <a href="tel:+919949051777">+91 99490 51777</a> instead of booking online.</p></details>
       <details><summary>How do I order without a delivery app?<i></i></summary><p>Add dishes from the menu on this page and send the order to us on WhatsApp, or browse our WhatsApp catalogue. Our team confirms availability, timing, delivery charges and the final bill in the chat.</p></details>
+      <details><summary>Can I get takeaway or delivery?<i></i></summary><p>Both. When you send your order on WhatsApp, choose Delivery, Takeaway or Dine-in. For delivery, our team confirms the charges and timing for your address in the chat.</p></details>
+      <details><summary>Are taxes included in the menu prices?<i></i></summary><p>No. Menu prices are in rupees and taxes are extra. Prices and availability can change, so we confirm the final bill on WhatsApp before we start cooking.</p></details>
+      <details><summary>Do you do catering and bulk biryani orders?<i></i></summary><p>Yes. We cook biryanis, pulaos, kebabs and Telugu specials for house parties, poojas, birthdays, office lunches and weddings, and take bulk biryani orders. <a href="#catering">Ask for a catering quote</a>.</p></details>
       <details><summary>Is TSK good for families and kids?<i></i></summary><p>Very. We have family booths, group tables in the garden room and milder dishes for children.</p></details>
+      <details><summary>What's the dining room like?<i></i></summary><p>Air-conditioned, with a main hall lined with murals of Telugu feasts, family booths and a garden room for groups. There's free Wi-Fi, and we screen live matches on the big screen.</p></details>
       <details><summary>Do you serve alcohol?<i></i></summary><p>No. We serve goli soda, fresh lime soda, soft drinks and desserts.</p></details>
     </div>
   </div>
