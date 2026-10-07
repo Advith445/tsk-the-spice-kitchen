@@ -1555,14 +1555,18 @@ window.TSK_MAIN = () => {
     gsap.ticker.add(t => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
   }
+  const isTouch = matchMedia('(pointer: coarse)').matches;
   const navOffset = () => -(parseFloat(getComputedStyle(root).getPropertyValue('--nav-h')) || 64) - 26;
   function goTo(target, immediate) {
     const el = typeof target === 'string' ? document.querySelector(target) : target;
     if (!el) return;
     if (lenis) lenis.scrollTo(el, { offset: navOffset(), duration: immediate ? 0 : 1.3, immediate: !!immediate, force: true });
     else {
-      const y = el.getBoundingClientRect().top + window.scrollY + navOffset();
-      window.scrollTo({ top: y, behavior: immediate || !motion ? 'auto' : 'smooth' });
+      const where = () => el.getBoundingClientRect().top + window.scrollY + navOffset();
+      // Phones jump straight there: a long animated scroll through the scroll-driven sections can stall
+      // part-way on mobile browsers (notably iPhone Safari), which looked like "Reserve a table" getting stuck.
+      window.scrollTo({ top: where(), behavior: immediate || !motion || isTouch ? 'auto' : 'smooth' });
+      if (isTouch) setTimeout(() => { const y = where(); if (Math.abs(y - window.scrollY) > 4) window.scrollTo(0, y); }, 400);
     }
   }
   document.addEventListener('click', e => {
@@ -1576,7 +1580,7 @@ window.TSK_MAIN = () => {
     closeSheet(); closeModal(); closeDrawer();
     if (id === '#top') {
       if (lenis) lenis.scrollTo(0, { force: true });
-      else window.scrollTo({ top: 0, behavior: motion ? 'smooth' : 'auto' });
+      else window.scrollTo({ top: 0, behavior: motion && !isTouch ? 'smooth' : 'auto' });
     } else goTo(el);
   });
 
