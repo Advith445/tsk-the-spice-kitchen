@@ -443,7 +443,7 @@ html.loaded .loader { pointer-events: none; }
 .menubtn i::before { top: -6px; } .menubtn i::after { top: 6px; }
 .nav__order { padding-inline: 1.2em; }
 
-.sheetnav { position: fixed; inset: 0; z-index: 89; background: var(--raatri); display: flex; flex-direction: column; padding: calc(96px + env(safe-area-inset-top, 0px)) var(--gutter) calc(32px + env(safe-area-inset-bottom, 0px)); visibility: hidden; clip-path: circle(0 at calc(100% - 52px) 42px); transition: clip-path .7s var(--ease), visibility 0s .7s; }
+.sheetnav { position: fixed; inset: 0; z-index: 89; background: var(--raatri); display: flex; flex-direction: column; padding: calc(96px + env(safe-area-inset-top, 0px)) var(--gutter) calc(32px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; visibility: hidden; clip-path: circle(0 at calc(100% - 52px) 42px); transition: clip-path .7s var(--ease), visibility 0s .7s; }
 .sheetnav.is-open { visibility: visible; clip-path: circle(150% at calc(100% - 52px) 42px); transition: clip-path .7s var(--ease); }
 .sheetnav ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .sheetnav a.big { display: block; font-family: var(--f-display); font-size: clamp(2.4rem, 11vw, 3.4rem); line-height: 1.1; text-decoration: none; padding: 4px 0; }
@@ -515,7 +515,7 @@ html:not(.motion) .hero__end { display: none; }
 .spot button { pointer-events: auto; display: flex; align-items: center; gap: 9px; border: 0; padding: 0; background: none; cursor: pointer; text-align: left; }
 .spot--l button { flex-direction: row-reverse; text-align: right; }
 .spot__dot { position: relative; width: calc(var(--r) * 2); height: calc(var(--r) * 2); border-radius: 50%; display: grid; place-items: center; background: rgba(36, 10, 7, .5); border: 1.5px solid var(--biyyam); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); flex: none; transition: background-color .25s, transform .25s var(--ease); }
-.spot__dot::before { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1.5px solid rgba(247, 240, 228, .55); animation: ping 2.4s var(--ease) infinite; }
+.spot__dot::before { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1.5px solid rgba(247, 240, 228, .55); animation: ping 2.4s var(--ease) infinite; pointer-events: none; }
 .spot__dot svg { width: 16px; height: 16px; stroke: var(--biyyam); stroke-width: 2.2; }
 @keyframes ping { 0% { transform: scale(.8); opacity: .9; } 80%, 100% { transform: scale(1.5); opacity: 0; } }
 .spot__lbl { display: grid; padding: 7px 14px 6px; border-radius: 14px; background: rgba(247, 240, 228, .94); color: var(--ink); box-shadow: 0 10px 30px -10px rgba(20, 6, 4, .6); line-height: 1.25; white-space: nowrap; transition: transform .25s var(--ease); }
@@ -571,7 +571,7 @@ html:not(.motion) .sig__img.is-on { opacity: 1; }
 .sig__bars button { flex: 1; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; align-items: center; }
 .sig__bars button i { display: block; height: 3px; border-radius: 3px; background: rgba(247, 240, 228, .3); overflow: hidden; }
 .sig__bars button i b { display: block; height: 100%; width: 100%; background: var(--biyyam); transform-origin: left; transform: scaleX(0); }
-.sig__map { position: absolute; z-index: 3; right: 16px; bottom: 16px; width: clamp(170px, 19vw, 248px); padding: 12px 12px 10px; border-radius: var(--r-md); background: rgba(36, 10, 7, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(247, 240, 228, .12); }
+.sig__map { position: absolute; z-index: 3; right: 16px; bottom: 16px; margin: 0; width: clamp(170px, 19vw, 248px); padding: 12px 12px 10px; border-radius: var(--r-md); background: rgba(36, 10, 7, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border: 1px solid rgba(247, 240, 228, .12); }
 .sig__map svg { width: 100%; height: auto; display: block; overflow: visible; }
 .sig__map .st { fill: rgba(247, 240, 228, .06); stroke: rgba(223, 173, 76, .55); stroke-width: 2; stroke-linejoin: round; transition: fill .6s; }
 .sig__map .st.is-on { fill: rgba(223, 173, 76, .3); }
@@ -608,6 +608,9 @@ html.nav-hidden .menu__bar { top: calc(12px + env(safe-area-inset-top, 0px)); }
 .search .ico { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--ink-2); pointer-events: none; }
 .search input { width: 100%; height: 48px; border-radius: 999px; border: 1px solid var(--line-light); background: var(--rayi-3); padding: 2px 44px 0 46px; font: inherit; font-size: 1rem; color: var(--ink); outline: none; transition: border-color .2s, box-shadow .2s; }
 .search input::placeholder { color: #8e7a75; }
+/* the page has its own clear button: hide the browser's built-in one, which took room even when invisible */
+.search input { -webkit-appearance: none; appearance: none; }
+.search input::-webkit-search-cancel-button, .search input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
 .search input:focus { border-color: var(--kumkum); box-shadow: 0 0 0 3px rgba(93, 22, 7, .14); }
 .search__x { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--ink-2); }
 .search__x:hover { background: var(--rayi-2); }
@@ -744,6 +747,10 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 .rating { display: flex; align-items: center; gap: 16px; }
 .rating b { font-family: var(--f-display); font-size: 4rem; line-height: 1; font-weight: 400; }
 .rating .stars { color: var(--kumkum); letter-spacing: 2px; font-size: 1.15rem; }
+/* fill the stars to match the rating beside them (4.5 → four and a half); the page sets --fill from that number */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  .rating .stars { --fill: 90%; background: linear-gradient(90deg, var(--kumkum) var(--fill), rgba(93, 22, 7, .22) var(--fill)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+}
 .rating small { display: block; color: var(--ink-2); font-size: .92rem; }
 .quotes { margin-top: clamp(36px, 5vw, 60px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .quote { margin: 0; padding: 28px; border-radius: var(--r-md); background: var(--rayi-3); display: grid; gap: 22px; align-content: space-between; }
@@ -865,6 +872,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 .modal__price { font-family: var(--f-display); font-size: 2rem; font-variant-numeric: tabular-nums; }
 .modal__buy { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
 .modal__buy .btn { flex: 1; }
+.modal__foot { display: grid; gap: 16px; }
 .modal__desc { color: var(--ink-2); }
 
 .toast { position: fixed; z-index: 110; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 24px); opacity: 0; visibility: hidden; pointer-events: none; display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 18px; border-radius: 999px; background: var(--biyyam); color: var(--ink); box-shadow: 0 18px 50px -14px rgba(10, 2, 1, .6); font-weight: 500; transition: transform .45s var(--ease), opacity .3s, visibility 0s .45s; max-width: calc(100vw - 24px); }
@@ -901,15 +909,19 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .toast { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .hero__end { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
   .hero__cue { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .hero__copy { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } /* keep the buttons clear of the bottom bar */
   .hero__ctas .btn { min-width: 0; }
   .sig__body { display: block; }
   .sig__media { position: sticky; top: 0; height: 100svh; padding: 0; z-index: 1; }
   .sig__frame { height: 100%; border-radius: 0; }
   .sig__frame::after { content: ""; position: absolute; inset: 0; z-index: 2; background: linear-gradient(180deg, rgba(36, 10, 7, .5), rgba(36, 10, 7, 0) 24%, rgba(36, 10, 7, 0) 45%, rgba(36, 10, 7, .55) 100%); pointer-events: none; }
   .sig__bars { top: calc(var(--nav-h) + 18px + env(safe-area-inset-top, 0px)); left: 14px; right: 14px; }
+  .sig__bars button { height: 30px; } /* a bigger target for fingers */
   .sig__map { top: calc(var(--nav-h) + 50px + env(safe-area-inset-top, 0px)); bottom: auto; right: 14px; width: 132px; padding: 8px; }
   .sig__map figcaption { display: none; }
-  .sig__steps { position: relative; z-index: 2; margin-top: -100svh; padding: 0 12px 30svh; }
+  /* the dish cards scroll over the photo; their see-through container lets taps reach the progress bars below */
+  .sig__steps { position: relative; z-index: 2; margin-top: -100svh; padding: 0 12px 30svh; pointer-events: none; }
+  .sig__card { pointer-events: auto; }
   .sig__step, .sig__step:first-child { min-height: 100svh; align-content: end; padding: 0 0 calc(110px + env(safe-area-inset-bottom, 0px)); }
   .sig__card { display: grid; gap: 12px; padding: 20px; border-radius: 22px; background: rgba(36, 10, 7, .8); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border: 1px solid rgba(247, 240, 228, .12); }
   .sig__step p { font-size: 1rem; }
@@ -922,7 +934,8 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .menu__bar { gap: 8px; padding: 8px; }
   .search input { height: 44px; padding-left: 42px; font-size: .98rem; }
   .search .ico { left: 14px; }
-  #dietSeg button { padding: .5em .62em .42em; gap: 0; }
+  .search input:placeholder-shown { padding-right: 12px; } /* room kept for the clear button only once there is text */
+  #dietSeg button { padding: .5em .56em .42em; gap: 0; }
   #dietSeg .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   #dietSeg button[data-diet="all"] .lbl { position: static; width: auto; height: auto; clip: auto; }
   .tab { padding: .5em .85em .42em; font-size: .9rem; }
@@ -940,6 +953,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .muggu { display: none; }
   .summary__mg { display: block; }
   .summary { flex-direction: column; align-items: stretch; }
+  .summary__txt { flex: none; } /* its 260px width rule would otherwise become a 260px height when stacked */
   .summary .btn { width: 100%; }
   .two { grid-template-columns: 1fr; }
   .cater { grid-template-columns: 1fr; }
@@ -948,10 +962,14 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .map { min-height: 340px; }
   .faq__grid { grid-template-columns: 1fr; gap: 10px; }
   .faq h2 { position: static; }
-  .modal { grid-template-columns: 1fr; top: auto; bottom: 0; left: 0; width: 100%; max-height: 92svh; border-radius: 26px 26px 0 0; transform: translateY(100%); }
+  .modal { display: flex; flex-direction: column; top: auto; bottom: 0; left: 0; width: 100%; max-height: 92svh; border-radius: 26px 26px 0 0; transform: translateY(100%); }
   .modal.is-open { transform: none; }
-  .modal__img { min-height: 0; aspect-ratio: 4 / 3; }
-  .modal__body { padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 0px)); }
+  .modal__img { flex: none; min-height: 0; aspect-ratio: 4 / 3; max-height: clamp(150px, 100svh - 390px, 40svh); }
+  .modal__body { flex: 1 1 auto; min-height: 0; padding: 20px 20px 0; }
+  /* the price and the Add button stay pinned to the bottom of the panel, however much there is above them */
+  .modal__foot { position: sticky; bottom: 0; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 -20px; padding: 12px 20px calc(14px + env(safe-area-inset-bottom, 0px)); background: var(--rayi); border-top: 1px solid var(--line-light); }
+  .modal__foot .modal__price { font-size: 1.7rem; line-height: 1; }
+  .modal__foot .modal__buy { flex: 1 1 auto; margin-top: 0; }
   .modal__body .x { position: absolute; top: 12px; right: 12px; margin: 0; background: rgba(247, 240, 228, .9); }
   .drawer { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 92svh; border-radius: 26px 26px 0 0; transform: translateY(100%); }
   .drawer.is-open { transform: none; }
@@ -979,6 +997,44 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .menu__wa .btn { width: 100%; }
   .toast { border-radius: 20px; }
   .toast span { white-space: normal; line-height: 1.35; }
+}
+/* the narrowest phones: the search box gets the whole row and the diet filter moves to its own */
+@media (max-width: 340px) {
+  .menu__row { flex-wrap: wrap; gap: 8px; }
+  .search { flex: 1 1 100%; }
+}
+/* short phone screens (small iPhones, or any phone with the browser's bars showing): fit the hero above the bottom bar */
+@media (max-width: 560px) and (max-height: 720px) {
+  .hero__copy { padding-top: calc(var(--nav-h) + 18px); }
+  .hero__te { font-size: 1.12rem; }
+  .hero h1 { font-size: clamp(2.05rem, 10.6vw, 2.6rem); }
+  .hero__sub { margin-top: .8em; font-size: .97rem; line-height: 1.45; }
+  .hero__ctas { margin-top: 1.1em; gap: 8px; }
+  .hero__ctas .btn { min-height: 46px; padding-block: .7em .64em; }
+}
+/* phones turned sideways: the hero fits the screen (without the paragraph) and its buttons stay reachable */
+@media (orientation: landscape) and (max-height: 520px) {
+  .hero__sticky { min-height: 0; }
+  .hero__copy { padding: calc(var(--nav-h) + 10px) var(--gutter) calc(92px + env(safe-area-inset-bottom, 0px)); }
+  .hero__te { font-size: 1.05rem; }
+  .hero h1 { font-size: clamp(1.8rem, 9vh, 2.6rem); }
+  .hero h1 .ln { display: inline; }
+  .hero__sub { display: none; }
+  .hero__ctas { margin-top: 1em; }
+  .hero__ctas .btn { min-height: 44px; }
+  /* the phone menu: links in two columns so all of them fit */
+  .sheetnav { padding-top: calc(var(--nav-h) + 22px + env(safe-area-inset-top, 0px)); }
+  .sheetnav .te { margin-bottom: 6px; }
+  .sheetnav ol { grid-template-columns: 1fr 1fr; column-gap: 24px; }
+  .sheetnav a.big { font-size: clamp(1.7rem, 9vh, 2.4rem); }
+}
+/* phones turned sideways, Signatures: a compact card on the left, so the photo, map and progress bars show on the right */
+@media (orientation: landscape) and (max-height: 520px) and (max-width: 860px) {
+  .sig__step, .sig__step:first-child { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  .sig__card { max-width: 54%; padding: 16px 18px; gap: 8px; }
+  .sig__step h3 { font-size: 1.7rem; }
+  .sig__step p { font-size: .92rem; line-height: 1.45; }
+  .sig__bars { left: calc(54% + 30px); }
 }
 @media (max-height: 760px) { .hero__cue { display: none; } }
 @media (prefers-reduced-motion: reduce) {
@@ -1512,8 +1568,10 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
     <h3 id="modalName"></h3>
     <p class="modal__desc" id="modalDesc"></p>
     <div class="vars" id="modalVars" role="group" aria-label="Choose an option"></div>
-    <div class="modal__price" id="modalPrice"></div>
-    <div class="modal__buy" id="modalBuy"></div>
+    <div class="modal__foot">
+      <div class="modal__price" id="modalPrice"></div>
+      <div class="modal__buy" id="modalBuy"></div>
+    </div>
   </div>
 </div>
 
@@ -1557,17 +1615,19 @@ window.TSK_MAIN = () => {
   }
   const isTouch = matchMedia('(pointer: coarse)').matches;
   const navOffset = () => -(parseFloat(getComputedStyle(root).getPropertyValue('--nav-h')) || 64) - 26;
+  // Scroll the page to where() (a function returning the target scroll position).
+  function scrollToY(where, immediate) {
+    if (lenis) { lenis.scrollTo(where(), { duration: immediate ? 0 : 1.3, immediate: !!immediate, force: true }); return; }
+    // Phones jump straight there: a long animated scroll through the scroll-driven sections can stall
+    // part-way on mobile browsers (notably iPhone Safari), which looked like "Reserve a table" getting stuck.
+    window.scrollTo({ top: where(), behavior: immediate || !motion || isTouch ? 'auto' : 'smooth' });
+    if (isTouch) setTimeout(() => { const y = where(); if (Math.abs(y - window.scrollY) > 4) window.scrollTo(0, y); }, 400);
+  }
   function goTo(target, immediate) {
     const el = typeof target === 'string' ? document.querySelector(target) : target;
     if (!el) return;
     if (lenis) lenis.scrollTo(el, { offset: navOffset(), duration: immediate ? 0 : 1.3, immediate: !!immediate, force: true });
-    else {
-      const where = () => el.getBoundingClientRect().top + window.scrollY + navOffset();
-      // Phones jump straight there: a long animated scroll through the scroll-driven sections can stall
-      // part-way on mobile browsers (notably iPhone Safari), which looked like "Reserve a table" getting stuck.
-      window.scrollTo({ top: where(), behavior: immediate || !motion || isTouch ? 'auto' : 'smooth' });
-      if (isTouch) setTimeout(() => { const y = where(); if (Math.abs(y - window.scrollY) > 4) window.scrollTo(0, y); }, 400);
-    }
+    else scrollToY(() => el.getBoundingClientRect().top + window.scrollY + navOffset(), immediate);
   }
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href^="#"]');
@@ -1617,8 +1677,10 @@ window.TSK_MAIN = () => {
   /* ───────── nav ───────── */
   const nav = $('#nav');
   let lastY = 0;
+  let navHold = 0; // until this time the top bar stays as it is (see selectTab)
   function onScrollNav() {
     const y = window.scrollY;
+    if (performance.now() < navHold) { lastY = y; return; }
     nav.classList.toggle('is-solid', y > 40);
     const hide = y > lastY + 4 && y > window.innerHeight * 1.2 && !sheet.classList.contains('is-open');
     const show = y < lastY - 4 || y < 200;
@@ -1794,9 +1856,23 @@ window.TSK_MAIN = () => {
     const t = tabs.find(x => x.dataset.tab === tab);
     if (t) t.scrollIntoView({ block: 'nearest', inline: 'center', behavior: motion ? 'smooth' : 'auto' });
     if (scroll) {
-      const bar = $('#menuBar');
-      const top = $('#menuList').getBoundingClientRect().top;
-      if (top < bar.getBoundingClientRect().bottom + 10 || top > window.innerHeight * 0.8) goTo($('#menuBar'), false);
+      // Bring the start of the list to just under the search bar as it sits stuck to the top of the screen.
+      // (The bar's own position can't be used for this: while stuck it reports where it is stuck, not where it sits
+      // in the page, so tapping a tab from deep inside a long section used to barely move the page.)
+      const bar = $('#menuBar'), list = $('#menuList');
+      // Read where the bar rests once stuck from a throwaway copy, so a top-bar slide still animating can't skew it.
+      const probe = document.createElement('div');
+      probe.className = 'menu__bar';
+      probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;height:0;min-height:0;padding:0;border:0;margin:0;transition:none';
+      document.body.appendChild(probe);
+      const under = (parseFloat(getComputedStyle(probe).top) || 0) + bar.offsetHeight + 10;
+      probe.remove();
+      const top = list.getBoundingClientRect().top;
+      if (top < under - 2 || top > window.innerHeight * 0.8) {
+        // keep the top bar as it is while we move, so the search bar stays exactly where we measured it
+        navHold = performance.now() + (lenis || (motion && !isTouch) ? 1600 : 800);
+        scrollToY(() => list.getBoundingClientRect().top + window.scrollY - under);
+      }
     }
   }
   const bindTabs = () => tabs.forEach((t, i) => {
@@ -1826,7 +1902,6 @@ window.TSK_MAIN = () => {
   });
   root.classList.add('menu-js');
   applyMenu();
-  dishes.forEach((d, di) => { if (d.v.some(v => cart[v[0]])) syncDishControls(di); });
   // The menu sheet can arrive after the page has started: rebuild the menu's lists and controls from the new data.
   window.TSK_MENU_REINIT = () => {
     indexVars(); pruneCart(); store.set('cart', cart);
@@ -1973,6 +2048,9 @@ window.TSK_MAIN = () => {
     document.body.appendChild(a); a.click(); a.remove();
   }
   renderCart();
+  // A returning visitor's order: show – 1 + on the dishes already in it. This must run after the dish panel and
+  // the order drawer above are set up, because updating a dish also refreshes those (running it earlier crashed the page).
+  dishes.forEach((d, di) => { if (!d.x && d.v.some(v => cart[v[0]])) syncDishControls(di); });
 
   /* ───────── reservation ───────── */
   const form = $('#bookForm');
@@ -2113,6 +2191,12 @@ window.TSK_MAIN = () => {
     el.querySelector('span').textContent = open ? `Open now, until 11 PM` : `Closed now, opens at 11 AM`;
   })();
 
+  /* ───────── rating stars: filled to match the number next to them ───────── */
+  (function stars() {
+    const n = parseFloat(($('.rating b') || {}).textContent), s = $('.rating .stars');
+    if (s && n >= 0 && n <= 5) s.style.setProperty('--fill', (n / 5 * 100) + '%');
+  })();
+
   /* ───────── map: only outside embedded previews ───────── */
   (function map() {
     const f = $('.map iframe'); if (!f) return;
@@ -2158,7 +2242,12 @@ window.TSK_MAIN = () => {
     const io = new IntersectionObserver(en => { en.forEach(x => { if (x.isIntersecting) setSig(+x.target.dataset.step); }); }, { rootMargin: '-45% 0px -45% 0px' });
     sigSteps.forEach(s => io.observe(s));
   }
-  $$('#sigBars button').forEach(b => b.addEventListener('click', () => goTo(sigSteps[+b.dataset.bar])));
+  $$('#sigBars button').forEach(b => b.addEventListener('click', () => {
+    const step = sigSteps[+b.dataset.bar];
+    if (window.innerWidth > 860) { goTo(step); return; }
+    // On phones each dish card rests at the bottom of its own screen-tall step: bring that whole step into view.
+    scrollToY(() => step.getBoundingClientRect().bottom + window.scrollY - window.innerHeight);
+  }));
 
   /* ───────── hero table: geometry ───────── */
   const stage = $('#heroStage'), sticky = $('#heroSticky'), piecesBox = $('#pieces'), spotsBox = $('#spots');
@@ -2200,6 +2289,19 @@ window.TSK_MAIN = () => {
 
   function placeSpots(fit) {
     spotsBox.innerHTML = '';
+    // Where labels may go once the table is set: on screen, below the top bar, above the "See the full menu" pill.
+    // Dishes are placed in order, each label on its preferred side or else the other; a dish that can't fit without
+    // touching one already placed is left out on this screen size, so labels never overlap and a tap always opens
+    // the dish it points at. (They are all still in the menu.)
+    const navEl = $('#nav'), endEl = $('#heroEnd');
+    const shift = Math.max(0, fit.vh - window.innerHeight); // a hero taller than the screen has scrolled up this much by the end
+    const area = { left: 6, right: fit.vw - 6, top: shift + navEl.offsetTop + navEl.offsetHeight + 6, bottom: Math.min(fit.vh, endEl.offsetTop) - 8 };
+    const box = spotsBox.getBoundingClientRect();
+    const rel = n => { const r = n.getBoundingClientRect(); return { left: r.left - box.left, right: r.right - box.left, top: r.top - box.top, bottom: r.bottom - box.top }; };
+    const taken = [];
+    const free = r => r.left >= area.left && r.right <= area.right && r.top >= area.top && r.bottom <= area.bottom &&
+      taken.every(t => r.right + 4 <= t.left || r.left >= t.right + 4 || r.bottom + 4 <= t.top || r.top >= t.bottom + 4);
+    const els = [];
     D.spots.forEach(sp => {
       const di = sp.dish;
       const d = dishes[di];
@@ -2212,21 +2314,18 @@ window.TSK_MAIN = () => {
       el.style.left = sx + 'px'; el.style.top = sy + 'px';
       el.innerHTML = `<div class="spot__in"><button type="button" data-view="${di}" aria-label="${esc(d.n)}, from ${rupee(d.v[0][2])}. See details"><span class="spot__dot"><svg class="ico" viewBox="0 0 24 24"><use href="#i-plus"/></svg></span><span class="spot__lbl"><b>${esc(sp.label || d.n)}</b><small>from ${rupee(d.v[0][2])}</small></span></button></div>`;
       spotsBox.appendChild(el);
-      const R = parseFloat(getComputedStyle(el).getPropertyValue('--r')) || 21;
-      const lbl = el.querySelector('.spot__lbl').getBoundingClientRect();
-      el._fitsRight = sx + R + lbl.width + 12 <= fit.vw - 6;
-      el._fitsLeft = sx - R - lbl.width - 12 >= 6;
-      if ((sp.side === 'l' && !fit.rot && el._fitsLeft) || (!el._fitsRight && el._fitsLeft)) el.classList.add('spot--l');
-    });
-    // nudge labels that collide onto their other side when there is room
-    const els = $$('.spot', spotsBox);
-    const rectOf = e => e.querySelector('.spot__lbl').getBoundingClientRect();
-    const hit = (a, b) => !(a.right < b.left - 4 || a.left > b.right + 4 || a.bottom < b.top - 4 || a.top > b.bottom + 4);
-    els.forEach((e, i) => {
-      const clash = () => els.some((o, k) => k !== i && (hit(rectOf(e), rectOf(o)) || hit(rectOf(e), o.querySelector('.spot__dot').getBoundingClientRect())));
-      if (!clash()) return;
-      const left = e.classList.contains('spot--l');
-      if (left ? e._fitsRight : e._fitsLeft) { e.classList.toggle('spot--l'); if (clash()) e.classList.toggle('spot--l'); }
+      const dot = rel(el.querySelector('.spot__dot'));
+      let lbl = null;
+      if (free(dot)) {
+        for (const left of (sp.side === 'l' && !fit.rot ? [true, false] : [false, true])) {
+          el.classList.toggle('spot--l', left);
+          const l = rel(el.querySelector('.spot__lbl'));
+          if (free(l)) { lbl = l; break; }
+        }
+      }
+      if (!lbl) { el.remove(); return; }
+      taken.push(dot, lbl);
+      els.push(el);
     });
     return els;
   }
@@ -2426,8 +2525,15 @@ window.TSK_MAIN = () => {
   function start() {
     if (started) return;
     started = true;
-    if (window.TSK_SHEET) TSK_SHEET.beforeMain();
-    window.TSK_MAIN();
+    try {
+      if (window.TSK_SHEET) TSK_SHEET.beforeMain();
+      window.TSK_MAIN();
+    } catch (e) {
+      // If something ever goes wrong while starting, show the page rather than leaving the loading logo up.
+      if (window.console) console.error('TSK:', e);
+      document.documentElement.classList.add('loaded');
+      var l = document.getElementById('loader'); if (l) l.remove();
+    }
   }
   function load(src, next) {
     var s = document.createElement('script');
