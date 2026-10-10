@@ -430,6 +430,11 @@ html.loaded .loader { pointer-events: none; }
 .nav__links a { display: block; padding: .62em .9em .52em; border-radius: 999px; text-decoration: none; font-size: .95rem; color: rgba(247, 240, 228, .82); transition: color .2s, background-color .2s; }
 .nav__links a:hover, .nav__links a.is-active { color: var(--biyyam); background: rgba(247, 240, 228, .08); }
 .nav__actions { display: flex; align-items: center; gap: 8px; }
+.nav__social { display: flex; align-items: center; gap: 6px; }
+.nav__social span { color: var(--mist); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.nav__social a { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--biyyam); border: 1px solid rgba(247, 240, 228, .22); background: rgba(247, 240, 228, .06); text-decoration: none; transition: background-color .2s, border-color .2s, transform .2s; }
+.nav__social a:hover { background: rgba(247, 240, 228, .12); border-color: rgba(247, 240, 228, .5); transform: translateY(-1px); }
+.nav__social svg { width: 18px; height: 18px; }
 .cartbtn { position: relative; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; border: 1px solid rgba(247, 240, 228, .22); background: transparent; cursor: pointer; transition: background-color .2s, border-color .2s; }
 .cartbtn:hover { background: rgba(247, 240, 228, .08); border-color: rgba(247, 240, 228, .5); }
 .cartbtn .ico { width: 22px; height: 22px; }
@@ -904,6 +909,9 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .nav { left: 8px; right: 8px; top: calc(8px + env(safe-area-inset-top, 0px)); padding: 0 7px; }
   .nav__brand .logo { width: 40px; height: 40px; }
   .nav__order { display: none; }
+  .nav { overflow: visible; }
+  .nav__social { position: absolute; right: 8px; top: calc(100% + 7px); padding: 5px 7px 5px 9px; border-radius: 999px; background: rgba(36, 10, 7, .78); border: 1px solid rgba(247, 240, 228, .14); box-shadow: 0 14px 32px rgba(0, 0, 0, .22); backdrop-filter: blur(14px); }
+  .nav__social a { width: 34px; height: 34px; }
   .cartbtn, .menubtn { width: 42px; height: 42px; }
   .dock { display: grid; }
   .toast { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
@@ -978,6 +986,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 @media (max-width: 560px) {
   .nav__brand small { display: none; }
   .nav__brand b { font-size: 1.12rem; }
+  .nav__social span { font-size: .62rem; }
   .hero__sub { font-size: 1.04rem; }
   .hero__ctas { flex-direction: column; align-items: stretch; width: min(100%, 320px); }
   .hero__end { font-size: .86rem; padding-left: 14px; }
@@ -1000,6 +1009,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 }
 /* the narrowest phones: the search box gets the whole row and the diet filter moves to its own */
 @media (max-width: 340px) {
+  .nav__social span { display: none; }
   .menu__row { flex-wrap: wrap; gap: 8px; }
   .search { flex: 1 1 100%; }
 }
@@ -1084,7 +1094,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 <header class="nav" id="nav">
   <a class="nav__brand" href="#top" aria-label="TSK – The Spice Kitchen, back to top">
     <span class="logo" role="img" aria-label="TSK logo"></span>
-    <span><b>The Spice Kitchen</b><small>Kokapet, Hyderabad</small></span>
+    <span><b>THE SPICE KITCHEN</b><small>Kokapet, Hyderabad</small></span>
   </a>
   <nav aria-label="Main">
     <ul class="nav__links">
@@ -1097,6 +1107,11 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   </nav>
   <div class="nav__actions">
     <a class="btn btn--gold btn--sm nav__order" href="https://wa.me/c/919398693051" target="_blank" rel="noopener"><svg class="ico"><use href="#i-wa"/></svg>Order on WhatsApp</a>
+    <div class="nav__social" aria-label="Follow us">
+      <span>Follow us</span>
+      <a href="https://www.instagram.com/thespicekitchen.kokapet/" target="_blank" rel="noopener" aria-label="Follow TSK on Instagram"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/></svg></a>
+      <a href="https://www.facebook.com/p/The-Spice-Kitchen-Kokapet-61591533968261/" target="_blank" rel="noopener" aria-label="Follow TSK on Facebook"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M13.5 21v-7h2.35l.35-2.7h-2.7V9.55c0-.78.22-1.32 1.35-1.32h1.45V5.8c-.25-.03-1.1-.1-2.1-.1-2.08 0-3.5 1.27-3.5 3.6v2H8.35V14h2.35v7h2.8z"/></svg></a>
+    </div>
     <button class="cartbtn" type="button" data-cart-open aria-label="Your order, 0 items"><svg class="ico"><use href="#i-bag"/></svg><span class="cartbtn__n" data-cart-count>0</span></button>
     <button class="menubtn" type="button" id="menubtn" aria-label="Open navigation" aria-expanded="false" aria-controls="sheetnav"><i></i></button>
   </div>
