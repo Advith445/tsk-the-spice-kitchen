@@ -1009,6 +1009,13 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 }
 /* the narrowest phones: the search box gets the whole row and the diet filter moves to its own */
 @media (max-width: 340px) {
+  /* TSK-MOBILE-HEADER-BEGIN: keep the full brand clear of fixed-size controls. */
+  .nav { gap: 6px; }
+  .nav__brand { flex: 1 1 0; gap: 6px; padding-right: 0; }
+  .nav__brand > span:last-child { min-width: 0; }
+  .nav__brand b { white-space: normal; }
+  .nav__actions { flex: none; }
+  /* TSK-MOBILE-HEADER-END */
   .nav__social span { display: none; }
   .menu__row { flex-wrap: wrap; gap: 8px; }
   .search { flex: 1 1 100%; }
