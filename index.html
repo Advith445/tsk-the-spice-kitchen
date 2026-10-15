@@ -1070,7 +1070,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 <style>
 /* Proposed: keep the original prompt inside its rounded box on phones. */
 @media(max-width:860px){
- .hero__end{box-sizing:border-box;width:calc(100% - 32px);max-width:360px;flex-direction:column;flex-wrap:nowrap;padding:18px 24px;gap:14px;white-space:normal;text-align:center}
+ .hero__end{box-sizing:border-box;width:max-content;max-width:min(304px,calc(100% - 32px));flex-direction:column;flex-wrap:nowrap;padding:12px 18px;gap:10px;white-space:normal;text-align:center}
  .hero__end>span{width:100%;line-height:1.35;overflow-wrap:break-word}
  .hero__end>.btn{max-width:100%;flex:none}
 }
