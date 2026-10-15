@@ -1067,6 +1067,14 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
 .tskl{isolation:auto}.tskl .selection-bar{z-index:86}.tskl .dish-card[data-id="apricot"] .dish-photo{background-image:url("apricot-delight-original-800.webp");background-size:cover;background-position:center!important}@media(max-width:860px){.tskl .selection-bar{bottom:calc(94px + env(safe-area-inset-bottom,0px))}}
 
 </style>
+<style>
+/* Proposed: keep the original prompt inside its rounded box on phones. */
+@media(max-width:860px){
+ .hero__end{box-sizing:border-box;width:calc(100% - 32px);max-width:360px;flex-direction:column;flex-wrap:nowrap;padding:18px 24px;gap:14px;white-space:normal;text-align:center}
+ .hero__end>span{width:100%;line-height:1.35;overflow-wrap:break-word}
+ .hero__end>.btn{max-width:100%;flex:none}
+}
+</style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
