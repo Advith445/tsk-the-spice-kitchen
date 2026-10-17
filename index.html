@@ -1603,7 +1603,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   </div>
   <div class="drawer__foot">
     <div class="total"><span>Items total <small>(taxes extra)</small></span><b id="cartTotal">₹0</b></div>
-    <a class="btn btn--maroon" id="sendOrder" href="https://wa.me/919398693051" target="_blank" rel="noopener"><svg class="ico"><use href="#i-wa"/></svg>Send order on WhatsApp</a>
+    <a class="btn btn--maroon" id="sendOrder" href="https://wa.me/919550141357" target="_blank" rel="noopener"><svg class="ico"><use href="#i-wa"/></svg>Send order on WhatsApp</a>
     <p class="drawer__fine">WhatsApp opens with your order written out. Press send there, and our team confirms availability, timing, delivery charges and the final bill. <button class="linkbtn" type="button" id="clearCart">Clear order</button></p>
   </div>
 </div>
@@ -1641,7 +1641,8 @@ window.TSK_MAIN = () => {
   const root = document.documentElement;
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
-  const WA = '919398693051';
+  const WA = '919398693051';        // staff on the WhatsApp Business app: bookings, catering, chat
+  const ORDER_WA = '919550141357';  // TSK order bot: website cart orders are logged and tracked there
   const rupee = n => '₹' + Number(n).toLocaleString('en-IN');
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const store = {
@@ -2060,7 +2061,7 @@ window.TSK_MAIN = () => {
   function updateSendHref() {
     $('#oAddrWrap').hidden = otype !== 'Delivery';
     $$('#otype button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.ot === otype)));
-    sendBtn.href = `https://wa.me/${WA}?text=${encodeURIComponent(orderText())}`;
+    sendBtn.href = `https://wa.me/${ORDER_WA}?text=${encodeURIComponent(orderText())}`;
   }
   $$('#otype button').forEach(b => b.addEventListener('click', () => { otype = b.dataset.ot; store.set('otype', otype); updateSendHref(); }));
   [oName, oAddr, oNote].forEach(el => el.addEventListener('input', () => { store.set('who', { name: oName.value, addr: oAddr.value }); updateSendHref(); }));
