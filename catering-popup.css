@@ -1,0 +1,66 @@
+/* Catering pop-up (#catering-popup in index.html, run by catering-popup.js).
+   Phones: a sheet that slides up from the bottom. Wider screens: a centred card. Uses the page's colour and font tokens. */
+.tskc { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--ink); overflow: hidden; overscroll-behavior: contain; font-family: var(--f-text); }
+.tskc:not([open]) { display: none; }
+.tskc::backdrop { background: transparent; }
+.tskc *, .tskc *::before, .tskc *::after { box-sizing: border-box; }
+html.tskc-lock { overflow: hidden; scrollbar-gutter: stable; }
+
+.tskc__scrim { position: absolute; inset: 0; background: rgba(16, 4, 3, .6); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); opacity: 0; transition: opacity .35s ease; }
+.tskc.is-in .tskc__scrim { opacity: 1; }
+
+.tskc__card {
+  position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; width: 100%; max-width: 540px;
+  max-height: calc(100% - 40px - env(safe-area-inset-top, 0px));
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--biyyam); border-radius: 28px 28px 0 0;
+  box-shadow: 0 -24px 60px -24px rgba(16, 4, 3, .7);
+  transform: translateY(104%); transition: transform .5s var(--ease);
+  outline: none;
+}
+.tskc.is-in .tskc__card { transform: none; }
+
+.tskc__photo { position: relative; flex: none; height: clamp(130px, 25svh, 220px); background: var(--raatri-2); cursor: pointer; }
+.tskc__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 48%; }
+.tskc__photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(36, 10, 7, .35), transparent 38%, transparent 70%, rgba(36, 10, 7, .25)); pointer-events: none; }
+.tskc__card.no-photo .tskc__photo { height: 56px; }
+.tskc__card.no-photo .tskc__photo img { display: none; }
+.tskc__handle { position: absolute; z-index: 1; top: 9px; left: 50%; width: 44px; height: 5px; margin-left: -22px; border-radius: 5px; background: rgba(247, 240, 228, .75); }
+
+.tskc__x { position: absolute; z-index: 2; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; background: rgba(247, 240, 228, .94); color: var(--kumkum); cursor: pointer; box-shadow: 0 6px 18px -8px rgba(16, 4, 3, .7); }
+.tskc__x .ico { width: 20px; height: 20px; stroke-width: 2.2; }
+.tskc__x:hover { background: var(--biyyam); }
+
+.tskc__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; justify-items: center; gap: 14px; text-align: center; padding: 22px 22px calc(14px + env(safe-area-inset-bottom, 0px)); }
+.tskc__eyebrow { margin: 0; display: inline-flex; align-items: center; gap: 12px; font-size: .78rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #8C5A12; }
+.tskc__eyebrow::before, .tskc__eyebrow::after { content: ""; width: 26px; height: 1.5px; background: var(--pasupu); }
+.tskc__title { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: clamp(2.05rem, 9.4vw, 2.75rem); line-height: 1.02; letter-spacing: -.012em; color: var(--kumkum); text-wrap: balance; }
+.tskc__title span { display: block; color: #8C5A12; }
+.tskc__text { margin: 0; max-width: 33ch; font-size: 1.06rem; line-height: 1.55; color: var(--ink-2); text-wrap: pretty; }
+.tskc__text b { color: var(--ink); font-weight: 600; }
+.tskc__cta { width: 100%; max-width: 380px; min-height: 54px; margin-top: 4px; font-size: 1.05rem; box-shadow: 0 12px 28px -14px rgba(93, 22, 7, .8); }
+.tskc__later { min-height: 44px; padding: 0 16px; border: 0; background: none; font: inherit; font-size: .95rem; color: var(--ink-2); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.tskc__later:hover { color: var(--ink); }
+.tskc :is(a, button):focus-visible { outline: 3px solid #8C5A12; outline-offset: 3px; }
+.tskc__card:focus, .tskc__card:focus-visible { outline: none; } /* the sheet takes focus only so screen readers start at its title */
+
+/* small or short phones */
+@media (max-width: 360px) { .tskc__body { padding-inline: 18px; gap: 12px; } .tskc__text { font-size: 1rem; } }
+@media (max-height: 640px) { .tskc__photo { height: clamp(96px, 20svh, 150px); } .tskc__body { gap: 10px; padding-top: 16px; } .tskc__title { font-size: clamp(1.8rem, 8vw, 2.3rem); } }
+@media (max-height: 470px) { .tskc__photo { height: 56px; } .tskc__photo img { display: none; } }
+
+/* computers and tablets (only used when SHOW_ON is 'everyone' in catering-popup.js) */
+@media (min-width: 861px) and (min-height: 520px) {
+  .tskc__card { top: 50%; bottom: auto; left: 50%; right: auto; width: min(820px, calc(100vw - 48px)); max-width: none; max-height: calc(100vh - 48px); flex-direction: row; border-radius: var(--r-lg); box-shadow: 0 30px 90px -30px rgba(16, 4, 3, .8); opacity: 0; transform: translate(-50%, -46%) scale(.97); transition: transform .45s var(--ease), opacity .3s ease; }
+  .tskc.is-in .tskc__card { opacity: 1; transform: translate(-50%, -50%); }
+  .tskc__photo { width: 44%; height: auto; min-height: 420px; }
+  .tskc__handle { display: none; }
+  .tskc__body { align-content: center; padding: 48px 44px 36px; }
+  .tskc__title { font-size: clamp(2.4rem, 3.6vw, 3rem); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tskc__card, .tskc.is-in .tskc__card { transition: opacity .2s ease; transform: none; opacity: 0; }
+  .tskc.is-in .tskc__card { opacity: 1; }
+  @media (min-width: 861px) and (min-height: 520px) { .tskc__card, .tskc.is-in .tskc__card { transform: translate(-50%, -50%); } }
+}
