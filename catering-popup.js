@@ -1,16 +1,14 @@
-/* Catering pop-up. Phone visitors see it once, a few seconds after the page opens, and it takes them to the
-   catering section (#catering). After someone has seen it, it stays away for HIDE_DAYS on that phone.
-   It waits while the visitor is scrolling, typing or has the order, a dish or the menu sheet open, and it is skipped
-   when they arrive on #catering or reach the catering section on their own.
+/* Catering pop-up. Phone visitors see it every time they open the site, DELAY_S seconds after the page starts
+   loading, and it takes them to the catering section (#catering). If the visitor's finger is on the screen or they
+   are typing at that moment, or the order, a dish or the menu sheet is open, it waits until they are done.
+   It is skipped for visitors who arrive on #catering or are already looking at the catering section.
    Preview it any time by adding ?popup to the address, e.g. tskthespicekitchenkokapet.in/?popup
    To take it down: delete the <dialog id="catering-popup"> in index.html, the catering-popup.css link in its <head>
-   and the catering-popup.js script tag. Only remembers the time it was shown (localStorage), nothing else. */
+   and the catering-popup.js script tag. It stores nothing on the visitor's phone. */
 (() => {
   'use strict';
   const SHOW_ON = 'phones';   // 'phones' = the site's phone layout (screens up to 860px wide); 'everyone' = computers too
-  const DELAY_S = 7;          // seconds on the page before it appears
-  const HIDE_DAYS = 3;        // days before the same phone sees it again
-  const KEY = 'tsk.cateringPopupSeen';
+  const DELAY_S = 3;          // seconds after the page starts loading before it appears (every visit)
 
   const box = document.getElementById('catering-popup');
   const target = document.getElementById('catering');
@@ -26,25 +24,23 @@
   const upright = matchMedia('(min-height: 480px)');   // skip phones held sideways
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 
-  function seenRecently() {
-    try { const t = Number(localStorage.getItem(KEY)); return t > 0 && Date.now() - t < HIDE_DAYS * 864e5; } catch (e) { return false; }
-  }
-  function markSeen() { try { localStorage.setItem(KEY, String(Date.now())); } catch (e) { /* storage unavailable */ } }
+  // An earlier version remembered when it was shown; clear that note from phones that still have it.
+  try { localStorage.removeItem('tsk.cateringPopupSeen'); } catch (e) { /* storage unavailable */ }
 
-  if (!forced && (seenRecently() || location.hash === '#catering')) return;
+  if (!forced && location.hash === '#catering') return;
 
-  // Reached the catering section on their own: no need to show it this visit.
+  // Already looking at the catering section: no need to show it this visit.
   let reached = false;
   if (!forced && 'IntersectionObserver' in window) {
     const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { reached = true; io.disconnect(); } }, { threshold: 0.2 });
     io.observe(target);
   }
 
-  // Never pop up mid-swipe: wait until the page has been still for a moment.
-  let lastMove = 0;
-  const moved = () => { lastMove = performance.now(); };
-  addEventListener('scroll', moved, { passive: true });
-  addEventListener('touchmove', moved, { passive: true });
+  // Never pop up under a finger mid-swipe (a stray tap would land on it): wait until the finger lifts.
+  let touching = 0, lastMove = 0;
+  addEventListener('touchstart', e => { touching = e.touches.length; }, { passive: true, capture: true });
+  addEventListener('touchend', e => { touching = e.touches.length; lastMove = performance.now(); }, { passive: true, capture: true });
+  addEventListener('touchcancel', () => { touching = 0; }, { passive: true, capture: true });
 
   function busy() {
     if (document.visibilityState !== 'visible') return true;
@@ -54,7 +50,7 @@
     if (a && a.matches && a.matches('input, textarea, select, [contenteditable="true"]')) return true;
     const css = document.getElementById('tskc-css');
     if (css && !css.sheet) return true; // styles not in yet
-    return performance.now() - lastMove < 1200;
+    return touching > 0 || performance.now() - lastMove < 300;
   }
   function allowed() {
     if (forced) return true;
@@ -74,17 +70,18 @@
     return photo;
   }
 
-  const started = performance.now();
-  const wait = forced ? 1000 : DELAY_S * 1000;
+  // performance.now() counts from the moment the visitor opened the page, so the delay includes loading time.
+  const wait = DELAY_S * 1000;
   let shown = false, opening = false;
   const timer = setInterval(() => {
     if (shown || opening) return;
-    if (performance.now() - started > 180000) { clearInterval(timer); return; } // three minutes in: leave them be
+    const now = performance.now();
+    if (now > wait + 180000) { clearInterval(timer); return; } // still busy three minutes later: leave them be
     if (!forced && reached) { clearInterval(timer); return; }
-    if (performance.now() - started < wait - 1500) return;
+    if (now < wait - 1500) return;
     if (!allowed()) return;
     loadPhoto();
-    if (performance.now() - started < wait || busy()) return;
+    if (now < wait || busy()) return;
     opening = true;
     photo.then(() => {
       opening = false;
@@ -92,11 +89,10 @@
       clearInterval(timer);
       open();
     });
-  }, 500);
+  }, 100);
 
   function open() {
     shown = true;
-    markSeen();
     box.showModal();
     root.classList.add('tskc-lock');
     card.focus({ preventScroll: true });
