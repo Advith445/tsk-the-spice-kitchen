@@ -1,13 +1,17 @@
 /* Catering pop-up (#catering-popup in index.html, run by catering-popup.js).
    Phones: a sheet that slides up from the bottom. Wider screens: a centred card. Uses the page's colour and font tokens. */
-.tskc { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--ink); overflow: hidden; overscroll-behavior: contain; font-family: var(--f-text); }
+.tskc { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--ink); overflow: hidden; overflow: clip; overscroll-behavior: contain; font-family: var(--f-text); }
+/* overflow: clip (not just hidden) so the browser can never scroll this box: when the dialog opens it moves focus to the
+   sheet, which is still below the screen, and a scrollable box would jump to show it, cancelling the slide-up. */
 .tskc:not([open]) { display: none; }
 .tskc::backdrop { background: transparent; }
 .tskc *, .tskc *::before, .tskc *::after { box-sizing: border-box; }
+.tskc { --tskc-ease: cubic-bezier(.32, .72, 0, 1); } /* the soft-landing curve phone sheets use */
 html.tskc-lock { overflow: hidden; scrollbar-gutter: stable; }
 
-.tskc__scrim { position: absolute; inset: 0; background: rgba(16, 4, 3, .6); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); opacity: 0; transition: opacity .35s ease; }
+.tskc__scrim { position: absolute; inset: 0; background: rgba(16, 4, 3, .66); opacity: 0; transition: opacity .5s ease; will-change: opacity; }
 .tskc.is-in .tskc__scrim { opacity: 1; }
+.tskc.is-out .tskc__scrim { transition-duration: .4s; }
 
 .tskc__card {
   position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; width: 100%; max-width: 540px;
@@ -15,13 +19,16 @@ html.tskc-lock { overflow: hidden; scrollbar-gutter: stable; }
   display: flex; flex-direction: column; overflow: hidden;
   background: var(--biyyam); border-radius: 28px 28px 0 0;
   box-shadow: 0 -24px 60px -24px rgba(16, 4, 3, .7);
-  transform: translateY(104%); transition: transform .5s var(--ease);
+  transform: translateY(104%); transition: transform .62s var(--tskc-ease); will-change: transform;
   outline: none;
 }
 .tskc.is-in .tskc__card { transform: none; }
+.tskc.is-out .tskc__card { transition-duration: .42s; }
 
-.tskc__photo { position: relative; flex: none; height: clamp(130px, 25svh, 220px); background: var(--raatri-2); cursor: pointer; }
-.tskc__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 48%; }
+.tskc__photo { position: relative; overflow: hidden; flex: none; height: clamp(130px, 25svh, 220px); background: var(--raatri-2); cursor: pointer; }
+.tskc__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 48%; transform: scale(1.07); transition: transform 1.3s var(--tskc-ease); }
+.tskc.is-in .tskc__photo img, .tskc.is-out .tskc__photo img { transform: none; }
+.tskc.is-out .tskc__photo img { transition: none; }
 .tskc__photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(36, 10, 7, .35), transparent 38%, transparent 70%, rgba(36, 10, 7, .25)); pointer-events: none; }
 .tskc__card.no-photo .tskc__photo { height: 56px; }
 .tskc__card.no-photo .tskc__photo img { display: none; }
@@ -32,6 +39,13 @@ html.tskc-lock { overflow: hidden; scrollbar-gutter: stable; }
 .tskc__x:hover { background: var(--biyyam); }
 
 .tskc__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; justify-items: center; gap: 14px; text-align: center; padding: 22px 22px calc(14px + env(safe-area-inset-bottom, 0px)); }
+@keyframes tskc-rise { from { opacity: 0; translate: 0 12px; } }
+.tskc.is-read .tskc__body > * { animation: tskc-rise .7s var(--tskc-ease) backwards; }
+.tskc.is-read .tskc__body > :nth-child(1) { animation-delay: .20s; }
+.tskc.is-read .tskc__body > :nth-child(2) { animation-delay: .26s; }
+.tskc.is-read .tskc__body > :nth-child(3) { animation-delay: .32s; }
+.tskc.is-read .tskc__body > :nth-child(4) { animation-delay: .38s; }
+.tskc.is-read .tskc__body > :nth-child(5) { animation-delay: .44s; }
 .tskc__eyebrow { margin: 0; display: inline-flex; align-items: center; gap: 12px; font-size: .78rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: #8C5A12; }
 .tskc__eyebrow::before, .tskc__eyebrow::after { content: ""; width: 26px; height: 1.5px; background: var(--pasupu); }
 .tskc__title { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: clamp(2.05rem, 9.4vw, 2.75rem); line-height: 1.02; letter-spacing: -.012em; color: var(--kumkum); text-wrap: balance; }
@@ -51,7 +65,8 @@ html.tskc-lock { overflow: hidden; scrollbar-gutter: stable; }
 
 /* computers and tablets (only used when SHOW_ON is 'everyone' in catering-popup.js) */
 @media (min-width: 861px) and (min-height: 520px) {
-  .tskc__card { top: 50%; bottom: auto; left: 50%; right: auto; width: min(820px, calc(100vw - 48px)); max-width: none; max-height: calc(100vh - 48px); flex-direction: row; border-radius: var(--r-lg); box-shadow: 0 30px 90px -30px rgba(16, 4, 3, .8); opacity: 0; transform: translate(-50%, -46%) scale(.97); transition: transform .45s var(--ease), opacity .3s ease; }
+  .tskc__card { top: 50%; bottom: auto; left: 50%; right: auto; width: min(820px, calc(100vw - 48px)); max-width: none; max-height: calc(100vh - 48px); flex-direction: row; border-radius: var(--r-lg); box-shadow: 0 30px 90px -30px rgba(16, 4, 3, .8); opacity: 0; transform: translate(-50%, -46%) scale(.97); transition: transform .6s var(--tskc-ease), opacity .4s ease; will-change: transform, opacity; }
+  .tskc__scrim { -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
   .tskc.is-in .tskc__card { opacity: 1; transform: translate(-50%, -50%); }
   .tskc__photo { width: 44%; height: auto; min-height: 420px; }
   .tskc__handle { display: none; }
@@ -62,5 +77,8 @@ html.tskc-lock { overflow: hidden; scrollbar-gutter: stable; }
 @media (prefers-reduced-motion: reduce) {
   .tskc__card, .tskc.is-in .tskc__card { transition: opacity .2s ease; transform: none; opacity: 0; }
   .tskc.is-in .tskc__card { opacity: 1; }
+  .tskc.is-out .tskc__card { transition-duration: .2s; }
+  .tskc__photo img, .tskc.is-in .tskc__photo img { transform: none; transition: none; }
+  .tskc.is-read .tskc__body > * { animation: none; }
   @media (min-width: 861px) and (min-height: 520px) { .tskc__card, .tskc.is-in .tskc__card { transform: translate(-50%, -50%); } }
 }

@@ -17,6 +17,7 @@
   const card = box.querySelector('.tskc__card');
   const body = box.querySelector('.tskc__body');
   const img = box.querySelector('.tskc__photo img');
+  const scrim = box.querySelector('.tskc__scrim');
   const cta = box.querySelector('.tskc__cta');
 
   const forced = /[?&]popup(=|&|$)/.test(location.search);
@@ -96,35 +97,48 @@
     box.showModal();
     root.classList.add('tskc-lock');
     card.focus({ preventScroll: true });
-    requestAnimationFrame(() => requestAnimationFrame(() => box.classList.add('is-in')));
+    box.scrollTop = 0; box.scrollLeft = 0;   // the browser's own focus step may have scrolled the (still off-screen) sheet into view
+    // Two frames first: the sheet is drawn off-screen and its layer made ready, so the slide-up starts smoothly.
+    requestAnimationFrame(() => requestAnimationFrame(() => box.classList.add('is-in', 'is-read')));
   }
-  let closing = 0;
-  function close(instant) {
-    if (!box.open) return;
-    root.classList.remove('tskc-lock');
+
+  // Older browsers without overflow: clip: never let the dialog sit scrolled, or the slide-up would be cancelled.
+  box.addEventListener('scroll', () => { if (box.scrollTop || box.scrollLeft) { box.scrollTop = 0; box.scrollLeft = 0; } });
+
+  // Closing slides the sheet away and fades the dimming, then closes the dialog when the slide has really finished.
+  let closeTimer = 0, afterClose = null;
+  function finish() { clearTimeout(closeTimer); if (box.open) box.close(); } // the 'close' handler below tidies up
+  function close() {
+    if (!box.open || box.classList.contains('is-out')) return;
+    if (reduce.matches) { finish(); return; }
+    box.classList.add('is-out');
     box.classList.remove('is-in');
-    card.style.transition = '';
-    card.style.transform = '';
-    clearTimeout(closing);
-    if (instant || reduce.matches) box.close();
-    else closing = setTimeout(() => { if (box.open) box.close(); }, 420);
+    scrim.style.transition = ''; scrim.style.opacity = '';   // hand over from a swipe in progress
+    card.style.transition = ''; card.style.transform = '';
+    closeTimer = setTimeout(finish, 800);                    // safety net in case the end of the slide is never reported
   }
+  card.addEventListener('transitionend', e => {
+    if (e.target === card && e.propertyName === 'transform' && box.classList.contains('is-out')) finish();
+  });
   // Esc, and the Android back button where the browser supports it
   box.addEventListener('cancel', e => { e.preventDefault(); close(); });
-  box.addEventListener('close', () => { root.classList.remove('tskc-lock'); box.classList.remove('is-in'); });
+  box.addEventListener('close', () => {
+    clearTimeout(closeTimer);
+    root.classList.remove('tskc-lock');
+    box.classList.remove('is-in', 'is-read', 'is-out');
+    scrim.style.cssText = ''; card.style.cssText = '';
+    if (afterClose) { const f = afterClose; afterClose = null; f(); }
+  });
   box.addEventListener('click', e => {
     if (e.target.closest('[data-tskc-close]')) { close(); return; }
     if (e.target.closest('.tskc__photo')) { cta.click(); }
   });
-  // "See catering options": close at once; the page's own link handling then scrolls to #catering
-  // (if the page script isn't running, the plain #catering link still works).
+  // "See catering options": the page's own link handling scrolls to #catering straight away (behind the dimming),
+  // while the sheet slides down to reveal it. If the page script isn't running, the plain #catering link still works.
   cta.addEventListener('click', () => {
-    close(true);
     const h = target.querySelector('h3');
-    if (h) {
-      h.setAttribute('tabindex', '-1');
-      setTimeout(() => h.focus({ preventScroll: true }), 500);
-    }
+    afterClose = () => { if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); } };
+    close();
   });
 
   // Swipe the sheet down to close it (phone layout only).
@@ -137,14 +151,18 @@
   card.addEventListener('touchmove', e => {
     if (y0 === null) return;
     dy = Math.max(0, e.touches[0].clientY - y0);
-    if (dy > 6) { card.style.transition = 'none'; card.style.transform = 'translateY(' + dy + 'px)'; }
+    if (dy > 6) {
+      // the sheet follows the finger, and the dimming lightens as it goes down
+      card.style.transition = 'none'; card.style.transform = 'translateY(' + (dy - 6) + 'px)';
+      scrim.style.transition = 'none'; scrim.style.opacity = String(1 - Math.min(1, dy / (card.offsetHeight || 1)) * .85);
+    }
   }, { passive: true });
   const release = cancelled => {
     if (y0 === null) return;
     const fast = dy > 40 && dy / Math.max(1, performance.now() - t0) > 0.6;
     y0 = null;
     if (!cancelled && (dy > 90 || fast)) close();
-    else { card.style.transition = ''; card.style.transform = ''; }
+    else { card.style.transition = ''; card.style.transform = ''; scrim.style.transition = ''; scrim.style.opacity = ''; }
   };
   card.addEventListener('touchend', () => release(false));
   card.addEventListener('touchcancel', () => release(true));
