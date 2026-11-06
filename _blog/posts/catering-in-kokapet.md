@@ -1,13 +1,13 @@
 ---
 title: "Catering from TSK Kokapet: what we cook and how to ask"
-description: House parties, poojas, birthdays, office lunches and weddings. What TSK cooks for celebrations and how to ask for a catering quote.
+description: House parties, poojas, birthdays, office lunches and weddings. What
+  TSK cooks for celebrations and how to ask for a catering quote.
 date: 2026-11-07
 cover: /blog/media/feast.webp
-cover_alt: A TSK spread seen from above with biryanis, noodles, starters, gulab jamun, raita and salan
-video: ""
-published: false
+cover_alt: A TSK spread seen from above with biryanis, noodles, starters, gulab
+  jamun, raita and salan
+published: true
 ---
-
 When the guest list grows, the food should still taste like home. We cook for house parties, poojas, birthdays, office lunches and weddings, and we take bulk biryani orders too.
 
 ## What we cook
