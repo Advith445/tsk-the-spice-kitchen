@@ -1,0 +1,14 @@
+{
+  "name": "tsk-blog-builder",
+  "private": true,
+  "type": "module",
+  "description": "Builds the From Our Kitchen blog pages from _blog/posts",
+  "scripts": {
+    "build": "node build-blog.mjs"
+  },
+  "dependencies": {
+    "marked": "14.1.4",
+    "sharp": "0.33.5",
+    "yaml": "2.6.1"
+  }
+}

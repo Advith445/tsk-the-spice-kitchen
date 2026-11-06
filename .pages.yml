@@ -1,0 +1,82 @@
+# Settings for the blog editor (Pages CMS, https://app.pagescms.org).
+# It shows one thing: the blog. The menu and the rest of the site are edited elsewhere.
+# After a post is saved, .github/workflows/build-blog.yml turns it into a web page within a few minutes.
+
+media:
+  - name: blog_photos
+    label: Blog photos
+    input: _blog/media
+    output: /blog/media
+    rename: safe
+    extensions: [jpg, jpeg, png, webp]
+
+content:
+  - name: posts
+    label: Blog posts
+    type: collection
+    path: _blog/posts
+    format: yaml-frontmatter
+    filename:
+      template: "{primary}.md"
+      field: create
+    operations:
+      rename: false
+    view:
+      fields: [title, date, published]
+      primary: title
+      sort: [date, title]
+      default:
+        sort: date
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+        description: The headline of the post.
+
+      - name: description
+        label: Short summary
+        type: text
+        required: true
+        options:
+          maxlength: 160
+        description: One or two sentences. Shown on the homepage card, in Google results and when the post is shared on WhatsApp.
+
+      - name: date
+        label: Date
+        type: date
+        required: true
+
+      - name: cover
+        label: Cover photo
+        type: image
+        required: true
+        options:
+          media: blog_photos
+        description: The main photo, shown at the top of the post and on the card. A landscape photo works best.
+
+      - name: cover_alt
+        label: Cover photo description
+        type: string
+        required: true
+        description: Describe the photo in a few words, for example "Chicken dum biryani in a steel handi". It helps Google and visitors who use screen readers.
+
+      - name: video
+        label: Video link (optional)
+        type: string
+        description: Paste a YouTube link. The video appears at the end of the post. To put a video in the middle of the text instead, paste its link on a line of its own in the story.
+
+      - name: published
+        label: Published
+        type: boolean
+        default: false
+        description: Switch on to put the post on the website. Switch off to take it down; it stays here so you can bring it back.
+
+      - name: body
+        label: Story
+        type: rich-text
+        options:
+          format: markdown
+          media: blog_photos
+        description: Write the story here. Use the toolbar for headings, bold, links and photos.
