@@ -672,6 +672,10 @@ html.nav-hidden .menu__bar { top: calc(12px + env(safe-area-inset-top, 0px)); }
 .inside__head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px 60px; align-items: end; }
 .inside__head h2 { font-size: var(--fs-h2); }
 .inside__head p { color: rgba(247, 240, 228, .78); font-size: var(--fs-lead); max-width: 34rem; }
+.inside__intro { display: grid; gap: 14px; max-width: 34rem; }
+.inside__ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.inside__head p.inside__note { font-size: .95rem; line-height: 1.55; color: rgba(247, 240, 228, .72); }
+.inside__note a { color: var(--biyyam); font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(247, 240, 228, .35); white-space: nowrap; }
 .inside__hero { margin-top: clamp(40px, 6vw, 72px); position: relative; height: min(84svh, 820px); }
 .inside__hero figure { position: absolute; inset: 0; margin: 0; overflow: hidden; border-radius: var(--r-lg); }
 .inside__hero img { width: 100%; height: 100%; object-fit: cover; }
@@ -969,6 +973,7 @@ textarea.input { height: auto; min-height: 92px; padding: 14px 16px; resize: ver
   .list { grid-template-columns: 1fr; }
   .grid-photo { grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 14px; }
   .inside__head { grid-template-columns: 1fr; }
+  .inside__ctas .btn { flex: 1 1 auto; }
   .inside__hero { height: 62svh; }
   .inside__grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .inside__grid .g1, .inside__grid .g2, .inside__grid .g3, .inside__grid .g4 { grid-column: auto; margin-top: 0; aspect-ratio: 4 / 5; }
@@ -1333,6 +1338,7 @@ html.tskd-lock{overflow:hidden}
   <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 16a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19.2" r=".9"/></symbol>
   <symbol id="i-snow" viewBox="0 0 24 24"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 2.5L15 4M9 20l3-2.5 3 2.5"/></symbol>
   <symbol id="i-kid" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="2.5"/><path d="M12 9v6M8 11.5l4-1.5 4 1.5M9.5 21l2.5-6 2.5 6"/></symbol>
+  <symbol id="i-door" viewBox="0 0 24 24"><path d="M6 21V4.5A1.5 1.5 0 0 1 7.5 3h9A1.5 1.5 0 0 1 18 4.5V21M3.5 21h17"/><circle cx="14.5" cy="12.5" r=".9"/></symbol>
   <symbol id="i-tv" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="12.5" rx="2"/><path d="M8 21h8M12 17.5V21"/></symbol>
   <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19 13 11"/></symbol>
   <symbol id="i-cup" viewBox="0 0 24 24"><path d="M6 4h12l-1.4 15.2a2 2 0 0 1-2 1.8H9.4a2 2 0 0 1-2-1.8L6 4z"/><path d="M6.6 10.5h10.8"/></symbol>
@@ -1630,8 +1636,16 @@ html.tskd-lock{overflow:hidden}
 <section class="inside" id="inside" aria-labelledby="inside-title">
   <div class="wrap">
     <div class="inside__head">
-      <h2 id="inside-title" class="display">Inside TSK</h2>
-      <p>A main hall lined with arched murals of Telugu feasts, a banana-leaf garden room for groups, family booths, and the match on the big screen.</p>
+      <h2 id="inside-title" class="display">Family dining in Kokapet</h2>
+      <div class="inside__intro">
+        <p>Join us at TSK – The Spice Kitchen on Gandipet Main Road for Andhra and Telangana food, with vegetarian and non-vegetarian choices for lunch or dinner.</p>
+        <p>Settle into air-conditioned family booths or our banana-leaf garden room for groups, surrounded by murals of Telugu feasts.</p>
+        <div class="inside__ctas">
+          <a class="btn btn--ghost" href="#menu">View the menu</a>
+          <a class="btn btn--gold" href="#reserve"><svg class="ico"><use href="#i-cal"/></svg>Request a table</a>
+        </div>
+        <p class="inside__note">Table requests open in WhatsApp and are confirmed by our team. For groups of 10 or more, please call <a href="tel:+919949051777">+91 99490 51777</a>.</p>
+      </div>
     </div>
     <div class="inside__hero">
       <figure id="insideHero">
@@ -1643,13 +1657,13 @@ html.tskd-lock{overflow:hidden}
       <figure class="g1" data-par="-6"><img src="https://lh3.googleusercontent.com/d/1d0OGVhW8HRZJd4OQ1NTorM24r1XX2nod=w1000-rw" alt="Booths under the arched murals in the main hall" loading="lazy" decoding="async"><figcaption><span>Family booths</span></figcaption></figure>
       <figure class="g2" data-par="8"><img src="https://lh3.googleusercontent.com/d/1A5C6SGYGoyz_tDpssHIwo_QkCPKH9TIr=w1200-rw" alt="The garden room, painted with banana leaves and flamingos, with copper pendant lights" loading="lazy" decoding="async"><figcaption><span>The garden room, good for groups</span></figcaption></figure>
       <figure class="g3" data-par="-4"><img src="https://lh3.googleusercontent.com/d/1Ito3HqME_YqFIEBzr9GhWgZSyLBa68CC=w1200-rw" alt="A corner booth in the garden room under warm pendant lights" loading="lazy" decoding="async"><figcaption><span>Warm light for long dinners</span></figcaption></figure>
-      <figure class="g4" data-par="10"><img src="https://lh3.googleusercontent.com/d/1WU1IQ4eXcgJENJobAVibl9vm4I73d-UG=w1000-rw" alt="A cricket match playing on the screen in the garden room" loading="lazy" decoding="async"><figcaption><span>Match nights on the big screen</span></figcaption></figure>
+      <figure class="g4" data-par="10"><img src="https://lh3.googleusercontent.com/d/1WU1IQ4eXcgJENJobAVibl9vm4I73d-UG=w1000-rw" alt="A cricket match playing on the screen in the garden room" loading="lazy" decoding="async"><figcaption><span>Private dining room, with a screen on request</span></figcaption></figure>
     </div>
     <ul class="facts" aria-label="Facilities">
       <li><svg class="ico"><use href="#i-snow"/></svg>Air-conditioned</li>
       <li><svg class="ico"><use href="#i-wifi"/></svg>Free Wi-Fi</li>
       <li><svg class="ico"><use href="#i-kid"/></svg>Kid friendly</li>
-      <li><svg class="ico"><use href="#i-tv"/></svg>Live sports screening</li>
+      <li><svg class="ico"><use href="#i-door"/></svg>Private dining room</li>
       <li><svg class="ico"><use href="#i-leaf"/></svg>Veg and non-veg kitchen</li>
       <li><svg class="ico"><use href="#i-cup"/></svg>No alcohol served</li>
     </ul>
@@ -1815,7 +1829,7 @@ html.tskd-lock{overflow:hidden}
       <details><summary>Are taxes included in the menu prices?<i></i></summary><p>No. Menu prices are in rupees and taxes are extra. Prices and availability can change, and the Ownly app shows the final bill before you pay.</p></details>
       <details><summary>Do you do catering and bulk biryani orders?<i></i></summary><p>Yes. We cook biryanis, pulaos, kebabs and Telugu specials for house parties, poojas, birthdays, office lunches and weddings, and take bulk biryani orders. <a href="#catering">Ask for a catering quote</a>.</p></details>
       <details><summary>Is TSK good for families and kids?<i></i></summary><p>Very. We have family booths, group tables in the garden room and milder dishes for children.</p></details>
-      <details><summary>What's the dining room like?<i></i></summary><p>Air-conditioned, with a main hall lined with murals of Telugu feasts, family booths and a garden room for groups. There's free Wi-Fi, and we screen live matches on the big screen.</p></details>
+      <details><summary>What's the dining room like?<i></i></summary><p>Air-conditioned, with a main hall lined with murals of Telugu feasts, family booths, and the garden room: our private dining room for groups, with a screen on request. There's free Wi-Fi.</p></details>
       <details><summary>Do you serve alcohol?<i></i></summary><p>No. We serve goli soda, fresh lime soda, soft drinks and desserts.</p></details>
     </div>
   </div>
