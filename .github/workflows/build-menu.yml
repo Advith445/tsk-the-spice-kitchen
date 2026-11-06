@@ -1,0 +1,84 @@
+name: Build menu
+
+# Keeps the /menu/ page in step with the "TSK Website Menu" Google Sheet.
+# Runs every 30 minutes, when the page builder itself changes, and when someone presses "Run workflow".
+# The page is only replaced when the sheet passes its checks (see _tools/build-menu.mjs). When it doesn't, the last good
+# page stays live and this run turns red, which makes GitHub send a failure email; the reason is in the run's log.
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - "_tools/build-menu.mjs"
+      - "_tools/menu.css"
+      - "_tools/test/**"
+      - ".github/workflows/build-menu.yml"
+  workflow_dispatch:
+    inputs:
+      allow_big_drop:
+        description: "Publish even if the menu lost more than 20% of its dishes (only after you removed many dishes on purpose)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-menu
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The builder's own checks run whenever the builder changes, never on the 30-minute schedule.
+      - name: Test the page builder
+        if: github.event_name == 'push'
+        run: node --test test/build-menu.test.mjs
+        working-directory: _tools
+
+      - name: Build the menu page
+        run: node build-menu.mjs
+        working-directory: _tools
+        env:
+          MENU_ALLOW_DROP: ${{ inputs.allow_big_drop && 'true' || 'false' }}
+
+      - name: Save the rebuilt page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          publish() {
+            for attempt in 1 2 3; do
+              if git pull --rebase origin main && git push origin HEAD:main; then
+                return 0
+              fi
+              git rebase --abort 2>/dev/null || true
+              sleep 5
+            done
+            return 1
+          }
+
+          git add -A menu sitemap.xml
+          if git diff --cached --quiet; then
+            # GitHub switches scheduled runs off in a public repository after 60 days without any activity.
+            # If nothing has been saved for 45 days, save an empty note so the 30-minute refresh keeps running.
+            last=$(git log -1 --format=%ct)
+            if [ $(( $(date +%s) - last )) -gt $(( 45 * 86400 )) ]; then
+              git commit --allow-empty -m "Keep the 30-minute menu refresh switched on"
+              publish
+            else
+              echo "The menu page is already up to date."
+            fi
+            exit 0
+          fi
+          git commit -m "Rebuild menu page"
+          publish

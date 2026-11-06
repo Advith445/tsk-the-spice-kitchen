@@ -27,3 +27,16 @@ Posts are written in the blog editor, [Pages CMS](https://app.pagescms.org), whi
 - **Look.** Styles for the blog pages and the homepage cards are in `_tools/blog.css` (copied to `blog/blog.css` by the build). The post layout is in `_tools/build-blog.mjs`.
 - **Run it yourself.** `cd _tools && npm ci && node build-blog.mjs`. The build is repeatable: running it twice gives identical files.
 - **Public repository.** Anyone can read this repository, including posts that are switched off. Don't put anything private in a draft.
+
+## Menu page: /menu/
+
+A plain, fast page with every dish, option and price, built from the same "TSK Website Menu" Google Sheet as the homepage menu. Search engines and the Google Business Profile can read it without running any scripts.
+
+- **Where things live.** `.github/workflows/build-menu.yml` runs `_tools/build-menu.mjs`, which writes `menu/index.html`, `menu/menu.css` (a copy of `_tools/menu.css`) and the `/menu/` entry in `sitemap.xml`. Don't edit those by hand; the next run replaces them.
+- **When it updates.** Every 30 minutes (GitHub can start a run a few minutes late), whenever the builder itself changes, and on demand: Actions tab → "Build menu" → "Run workflow". After you edit the sheet, press "Run workflow" for an immediate update, or just wait for the next run.
+- **What the page shows.** Sections in the order of the sheet's "Sections" tab, with "Popular" dishes first (only those get photos). Rows with "On website" switched off are left out. Each dish shows its options, prices in ₹ and a Veg / Egg / Non-veg mark that is also written in words. The page also carries the same menu as structured data (JSON-LD) for Google.
+- **Safety checks.** The page is only replaced when the sheet passes these checks: every visible row has a Section, a Dish name, a Type (Veg, Egg or Non-veg) and a price that is a number, the sheet has at least 30 dishes, and it has not lost more than 20% of the dishes on the live page. If a check fails, the live page is left alone, the run turns red, and GitHub emails the account that last changed the schedule. Open the failed run, then the "Build the menu page" step: it names the row to fix. The next run picks up the fix by itself.
+- **Removing many dishes on purpose.** If you really cut the menu by more than 20%, press "Run workflow" and tick "Publish even if the menu lost more than 20% of its dishes".
+- **Not covered.** The built-in backup menu inside `index.html` (shown only when the sheet can't be read) is not refreshed by this job.
+- **Quiet repository.** GitHub switches scheduled runs off in a public repository after 60 days without any activity. If nothing has been saved for 45 days, the job adds an empty "Keep the 30-minute menu refresh switched on" note so the schedule keeps running.
+- **Look.** Styles are in `_tools/menu.css`, the page layout in `_tools/build-menu.mjs`. `cd _tools && npm test` runs the builder's checks. To build it yourself: `cd _tools && node build-menu.mjs` (needs internet access to Google Sheets). Running it twice gives identical files.

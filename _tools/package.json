@@ -2,9 +2,11 @@
   "name": "tsk-blog-builder",
   "private": true,
   "type": "module",
-  "description": "Builds the From Our Kitchen blog pages from _blog/posts",
+  "description": "Builds the From Our Kitchen blog pages from _blog/posts and the /menu/ page from the TSK Website Menu sheet",
   "scripts": {
-    "build": "node build-blog.mjs"
+    "build": "node build-blog.mjs",
+    "build-menu": "node build-menu.mjs",
+    "test": "node --test test/build-menu.test.mjs"
   },
   "dependencies": {
     "marked": "14.1.4",
