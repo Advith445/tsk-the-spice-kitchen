@@ -136,8 +136,11 @@
 .bl-foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .bl-foot__legal { max-width: 1100px; margin: 28px auto 0; padding-top: 18px; border-top: 1px solid rgba(247, 240, 228, .14); display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; }
 
+/* The three text links need about 630px next to the logo; below 700px only the order button stays. */
+@media (max-width: 700px) {
+  .bl-page .bl-top nav a.bl-link { display: none; }
+}
 @media (max-width: 560px) {
   .bl-brand small { display: none; }
   .bl-brand b { font-size: 18px; }
-  .bl-page .bl-top nav a.bl-link { display: none; }
 }

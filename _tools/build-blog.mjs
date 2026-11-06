@@ -249,6 +249,7 @@ ${extra}
     </a>
     <nav aria-label="Main">
       <a class="bl-link" href="/">Website</a>
+      <a class="bl-link" href="/menu/">Menu</a>
       <a class="bl-link" href="/blog/">Stories</a>
       <a class="bl-btn" href="${ORDER_URL}" target="_blank" rel="noopener">Order on Ownly</a>
     </nav>
@@ -272,7 +273,7 @@ const foot = (withVideo) => `<footer class="bl-foot">
       <h2>Explore</h2>
       <ul>
         <li><a href="/">Home</a></li>
-        <li><a href="/#menu">Full menu</a></li>
+        <li><a href="/menu/">Full menu</a></li>
         <li><a href="/#reserve">Reserve a table</a></li>
         <li><a href="/blog/">From Our Kitchen</a></li>
       </ul>
