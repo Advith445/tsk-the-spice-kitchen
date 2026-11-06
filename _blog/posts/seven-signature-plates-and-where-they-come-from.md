@@ -1,13 +1,13 @@
 ---
 title: Seven signature plates, and where each one comes from
-description: From Hyderabad's dum biryani to Konaseema kodi chips and Karimnagar wings, here is where TSK's seven signature dishes come from.
+description: From Hyderabad's dum biryani to Konaseema kodi chips and Karimnagar
+  wings, here is where TSK's seven signature dishes come from.
 date: 2026-11-07
 cover: /blog/media/biryani.webp
-cover_alt: Chicken dum biryani in a steel handi with a leg piece and egg, with raita and salan
-video: ""
-published: false
+cover_alt: Chicken dum biryani in a steel handi with a leg piece and egg, with
+  raita and salan
+published: true
 ---
-
 Every dish on our Signatures list comes from a particular corner of Andhra Pradesh or Telangana. Here are the seven plates our guests come back for, and the place each one is from.
 
 ## Hyderabad: Chicken Dum Biryani
