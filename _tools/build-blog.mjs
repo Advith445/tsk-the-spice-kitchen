@@ -441,7 +441,8 @@ const fill = (html, name, content) => {
   const s = `<!-- ${name}:START -->`, e = `<!-- ${name}:END -->`;
   const a = html.indexOf(s), b = html.indexOf(e);
   if (a < 0 || b < a) throw new Error(`index.html is missing the ${s} / ${e} markers.`);
-  return html.slice(0, a + s.length) + '\n' + content + (content ? '\n' : '') + html.slice(b);
+  const eol = html.includes('\r\n') ? '\r\n' : '\n'; // keep the file's own line endings so reruns never churn
+  return html.slice(0, a + s.length) + eol + content.replace(/\r?\n/g, eol) + (content ? eol : '') + html.slice(b);
 };
 let nextHome = fill(indexHtml, 'BLOG', homeBlock(live));
 nextHome = fill(nextHome, 'BLOG-NAV', live.length ? '      <li><a href="/blog/">Stories</a></li>' : '');
