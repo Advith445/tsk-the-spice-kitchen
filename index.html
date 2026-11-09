@@ -447,6 +447,11 @@ html.loaded .loader { pointer-events: none; }
 .menubtn i::before, .menubtn i::after { content: ""; position: absolute; left: 0; width: 18px; height: 1.6px; background: currentColor; border-radius: 2px; transition: transform .3s var(--ease); }
 .menubtn i::before { top: -6px; } .menubtn i::after { top: 6px; }
 .nav__order { padding-inline: 1.2em; }
+/* just above the side-panel breakpoint, tighten the top menu so six links fit beside the logo and the order button */
+@media (min-width: 1081px) and (max-width: 1200px) {
+  .nav__links a { padding-inline: .55em; }
+  .nav__social span { display: none; }
+}
 
 .sheetnav { position: fixed; inset: 0; z-index: 89; background: var(--raatri); display: flex; flex-direction: column; padding: calc(96px + env(safe-area-inset-top, 0px)) var(--gutter) calc(32px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; visibility: hidden; clip-path: circle(0 at calc(100% - 52px) 42px); transition: clip-path .7s var(--ease), visibility 0s .7s; }
 .sheetnav.is-open { visibility: visible; clip-path: circle(150% at calc(100% - 52px) 42px); transition: clip-path .7s var(--ease); }
@@ -1369,6 +1374,9 @@ html.tskd-lock{overflow:hidden}
       <li><a href="#inside">Inside</a></li>
       <li><a href="#reserve">Reserve</a></li>
       <li><a href="#visit">Visit</a></li>
+<!-- BLOG-NAV:START -->
+      <li><a href="/blog/">Stories</a></li>
+<!-- BLOG-NAV:END -->
     </ul>
   </nav>
   <div class="nav__actions">
@@ -1391,6 +1399,9 @@ html.tskd-lock{overflow:hidden}
     <li><a class="big" href="#inside">Inside TSK</a></li>
     <li><a class="big" href="#reserve">Reserve a table</a></li>
     <li><a class="big" href="#visit">Visit us</a></li>
+<!-- BLOG-SHEET:START -->
+    <li><a class="big" href="/blog/">Stories</a></li>
+<!-- BLOG-SHEET:END -->
   </ol>
   <div class="sheetnav__foot">
     <span>Open every day, 11 AM to 11 PM</span>

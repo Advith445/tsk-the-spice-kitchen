@@ -3,7 +3,7 @@
  * Reads    _blog/posts/*.md    (written in the blog editor; title, photo, text, optional video)
  *          _blog/media/*       (photos uploaded in the editor)
  * Writes   blog/               one page per published post, the blog index, resized photos, styles
- *          index.html          the "From Our Kitchen" cards between the BLOG:START / BLOG:END markers
+ *          index.html          the "From Our Kitchen" cards (BLOG markers) and the "Stories" menu links (BLOG-NAV, BLOG-SHEET)
  *          sitemap.xml         the blog entries
  *
  * Run by .github/workflows/build-blog.yml whenever a post is saved. Safe to run again at any time:
@@ -26,8 +26,6 @@ const BRAND = 'TSK – The Spice Kitchen, Kokapet';
 const ORDER_URL = 'https://ownly.food/app/brand/BR443647';
 const PHONE = '+91 99490 51777';
 const HOME_CARDS = 3;
-const START = '<!-- BLOG:START -->';
-const END = '<!-- BLOG:END -->';
 
 const warn = (msg) => console.log(`::warning::${msg}`);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -437,9 +435,17 @@ if (live.length) {
   write(path.join(OUT, 'index.html'), blogIndexPage(live));
 }
 
-const i = indexHtml.indexOf(START), j = indexHtml.indexOf(END);
-if (i < 0 || j < i) throw new Error(`index.html is missing the ${START} / ${END} markers.`);
-const nextHome = indexHtml.slice(0, i + START.length) + '\n' + homeBlock(live) + (live.length ? '\n' : '') + indexHtml.slice(j);
+/* Fills the generated parts of index.html: the cards above the FAQs, and the "Stories" link in the top menu and the
+   side panel. The link only exists while there is at least one published post, so it never points at a missing page. */
+const fill = (html, name, content) => {
+  const s = `<!-- ${name}:START -->`, e = `<!-- ${name}:END -->`;
+  const a = html.indexOf(s), b = html.indexOf(e);
+  if (a < 0 || b < a) throw new Error(`index.html is missing the ${s} / ${e} markers.`);
+  return html.slice(0, a + s.length) + '\n' + content + (content ? '\n' : '') + html.slice(b);
+};
+let nextHome = fill(indexHtml, 'BLOG', homeBlock(live));
+nextHome = fill(nextHome, 'BLOG-NAV', live.length ? '      <li><a href="/blog/">Stories</a></li>' : '');
+nextHome = fill(nextHome, 'BLOG-SHEET', live.length ? '    <li><a class="big" href="/blog/">Stories</a></li>' : '');
 if (nextHome !== indexHtml) fs.writeFileSync(path.join(ROOT, 'index.html'), nextHome);
 updateSitemap(live);
 
