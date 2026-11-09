@@ -19,11 +19,12 @@
 
 .bl-top { background: var(--bl-raatri); color: var(--bl-biyyam); padding: 10px 16px; position: sticky; top: 0; z-index: 20; }
 .bl-top__in { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
-.bl-page a.bl-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--bl-biyyam); min-width: 0; }
+.bl-page a.bl-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--bl-biyyam); min-width: 0; flex: 0 1 auto; }
+.bl-brand > span { min-width: 0; }
 .bl-brand img { width: 42px; height: 42px; border-radius: 50%; flex: none; display: block; }
-.bl-brand b { display: block; font: 400 20px/1 var(--bl-display); white-space: nowrap; }
+.bl-brand b { display: block; font: 400 20px/1 var(--bl-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bl-brand small { display: block; font-size: 12px; color: rgba(247, 240, 228, .66); margin-top: 3px; white-space: nowrap; }
-.bl-top nav { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.bl-top nav { margin-left: auto; display: flex; align-items: center; gap: 6px; flex: none; }
 .bl-page .bl-top nav a { color: rgba(247, 240, 228, .85); text-decoration: none; padding: 8px 12px; border-radius: 999px; font-size: 15px; white-space: nowrap; }
 .bl-page .bl-top nav a:hover { background: rgba(247, 240, 228, .1); color: var(--bl-biyyam); }
 .bl-page .bl-top nav a.bl-btn { padding: .6em 1.15em; min-height: 40px; font-size: 15px; background: var(--bl-pasupu); color: var(--bl-raatri); }
@@ -140,7 +141,16 @@
 @media (max-width: 700px) {
   .bl-page .bl-top nav a.bl-link { display: none; }
 }
+/* Phones: the name and the order button must never run into each other, even on a 320px screen or with large text. */
 @media (max-width: 560px) {
+  .bl-top { padding-inline: 12px; }
+  .bl-top__in { gap: 10px; }
+  .bl-page a.bl-brand { gap: 8px; }
   .bl-brand small { display: none; }
-  .bl-brand b { font-size: 18px; }
+  .bl-brand b { font-size: 17px; }
+  .bl-page .bl-top nav a.bl-btn { padding: .55em 1em; min-height: 38px; font-size: 14px; }
+}
+/* Below 440px there isn't room for "Order on Ownly" beside the name, so the button says "Order" (it still opens Ownly). */
+@media (max-width: 440px) {
+  .bl-opt { display: none; }
 }

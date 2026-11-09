@@ -22,11 +22,12 @@
 
 .mn-top { background: var(--mn-raatri); color: var(--mn-biyyam); padding: 10px 16px; position: sticky; top: 0; z-index: 20; }
 .mn-top__in { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 14px; }
-.mn-page a.mn-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--mn-biyyam); min-width: 0; }
+.mn-page a.mn-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--mn-biyyam); min-width: 0; flex: 0 1 auto; }
+.mn-brand > span { min-width: 0; }
 .mn-brand img { width: 42px; height: 42px; border-radius: 50%; flex: none; display: block; }
-.mn-brand b { display: block; font: 400 20px/1 var(--mn-display); white-space: nowrap; }
+.mn-brand b { display: block; font: 400 20px/1 var(--mn-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mn-brand small { display: block; font-size: 12px; color: rgba(247, 240, 228, .66); margin-top: 3px; white-space: nowrap; }
-.mn-top nav { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.mn-top nav { margin-left: auto; display: flex; align-items: center; gap: 6px; flex: none; }
 .mn-page .mn-top nav a { color: rgba(247, 240, 228, .85); text-decoration: none; padding: 8px 12px; border-radius: 999px; font-size: 15px; white-space: nowrap; }
 .mn-page .mn-top nav a:hover { background: rgba(247, 240, 228, .1); color: var(--mn-biyyam); }
 .mn-page .mn-top nav a[aria-current="page"] { color: var(--mn-biyyam); background: rgba(247, 240, 228, .12); }
@@ -123,11 +124,21 @@
 @media (max-width: 700px) {
   .mn-page .mn-top nav a.mn-link { display: none; }
 }
+/* Phones: the name and the order button must never run into each other, even on a 320px screen or with large text. */
 @media (max-width: 560px) {
+  .mn-top { padding-inline: 12px; }
+  .mn-top__in { gap: 10px; }
+  .mn-page a.mn-brand { gap: 8px; }
   .mn-brand small { display: none; }
-  .mn-brand b { font-size: 18px; }
+  .mn-brand b { font-size: 17px; }
+  .mn-page .mn-top nav a.mn-btn { padding: .55em 1em; min-height: 38px; font-size: 14px; }
   .mn-acts .mn-btn { flex: 1 1 auto; }
   .mn-key__note { margin-left: 0; flex-basis: 100%; }
+}
+
+/* Below 440px there isn't room for "Order on Ownly" beside the name, so the button says "Order" (it still opens Ownly). */
+@media (max-width: 440px) {
+  .mn-opt { display: none; }
 }
 
 /* ───── on paper: the list only, in two columns ───── */

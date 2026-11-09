@@ -249,7 +249,7 @@ ${extra}
       <a class="bl-link" href="/">Website</a>
       <a class="bl-link" href="/menu/">Menu</a>
       <a class="bl-link" href="/blog/">Stories</a>
-      <a class="bl-btn" href="${ORDER_URL}" target="_blank" rel="noopener">Order on Ownly</a>
+      <a class="bl-btn" href="${ORDER_URL}" target="_blank" rel="noopener" aria-label="Order on Ownly">Order<span class="bl-opt"> on Ownly</span></a>
     </nav>
   </div>
 </header>

@@ -339,7 +339,7 @@ ${ld}
     <nav aria-label="Main">
       <a class="mn-link" href="/">Website</a>
       <a class="mn-link" href="/menu/" aria-current="page">Menu</a>
-${hasBlog ? '      <a class="mn-link" href="/blog/">Stories</a>\n' : ''}      <a class="mn-btn" href="${ORDER_URL}" target="_blank" rel="noopener">Order on Ownly</a>
+${hasBlog ? '      <a class="mn-link" href="/blog/">Stories</a>\n' : ''}      <a class="mn-btn" href="${ORDER_URL}" target="_blank" rel="noopener" aria-label="Order on Ownly">Order<span class="mn-opt"> on Ownly</span></a>
     </nav>
   </div>
 </header>
