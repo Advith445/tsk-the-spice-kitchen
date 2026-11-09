@@ -1370,7 +1370,7 @@ html.tskd-lock{overflow:hidden}
   <nav aria-label="Main">
     <ul class="nav__links">
       <li><a href="#signatures">Signatures</a></li>
-      <li><a href="#menu">Menu</a></li>
+      <li><a href="/menu/">Menu</a></li>
       <li><a href="#inside">Inside</a></li>
       <li><a href="#reserve">Reserve</a></li>
       <li><a href="#visit">Visit</a></li>
@@ -1395,7 +1395,7 @@ html.tskd-lock{overflow:hidden}
   <span class="te">మా వంటిల్లు</span>
   <ol>
     <li><a class="big" href="#signatures">Signatures</a></li>
-    <li><a class="big" href="#menu">Menu</a></li>
+    <li><a class="big" href="/menu/">Menu</a></li>
     <li><a class="big" href="#inside">Inside TSK</a></li>
     <li><a class="big" href="#reserve">Reserve a table</a></li>
     <li><a class="big" href="#visit">Visit us</a></li>
@@ -2131,7 +2131,7 @@ window.TSK_MAIN = () => {
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(entries => {
       entries.forEach(en => {
-        if (en.isIntersecting) navLinks.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + en.target.id));
+        if (en.isIntersecting) navLinks.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + en.target.id || (en.target.id === 'menu' && a.getAttribute('href') === '/menu/')));
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
     ['signatures', 'menu', 'inside', 'reserve', 'visit'].forEach(id => { const s = document.getElementById(id); if (s) io.observe(s); });
