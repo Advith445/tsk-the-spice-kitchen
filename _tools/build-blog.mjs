@@ -299,7 +299,7 @@ const card = (p, headingLevel = 3) => `<li class="bl-card">
 </li>`;
 
 function postPage(p, others) {
-  const custom = p.slug === 'family-lunch-dinner-kokapet';
+  const custom = ['family-lunch-dinner-kokapet', 'ragi-sangati-natukodi-pulusu-kokapet'].includes(p.slug);
   const url = `${SITE}/blog/${p.slug}/`;
   const ld = [
     {
@@ -318,7 +318,7 @@ function postPage(p, others) {
   ].map(jsonLd).join('\n');
   const share = `https://wa.me/?text=${encodeURIComponent(`${p.title} ${url}`)}`;
   const more = !custom && others.length ? `<section class="bl-more" aria-labelledby="more-title"><div class="bl-wrap"><h2 id="more-title">More from our kitchen</h2><ul class="bl-cards">${others.map((o) => card(o)).join('\n')}</ul></div></section>` : '';
-  return head({ title: custom ? 'Family Lunch and Dinner in Kokapet | TSK Meal Guide' : `${p.title} | ${BRAND}`, description: p.description, canonical: url, image: p.og, type: 'article', extra: ld }) + `
+  return head({ title: p.slug === 'ragi-sangati-natukodi-pulusu-kokapet' ? 'Ragi Sangati with Natukodi Pulusu in Kokapet | TSK' : custom ? 'Family Lunch and Dinner in Kokapet | TSK Meal Guide' : `${p.title} | ${BRAND}`, description: p.description, canonical: url, image: p.og, type: 'article', extra: ld }) + `
 <main id="main">
 <article>
   <div class="bl-narrow">
