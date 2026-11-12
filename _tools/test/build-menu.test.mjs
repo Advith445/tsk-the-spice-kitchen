@@ -129,7 +129,7 @@ test('the page has every dish and option as text, escaped, with working jump lin
   const model = build();
   const html = renderPage(model, { site: 'https://example.test', hasBlog: true, cssVersion: 'abc12345', year: 2026 });
   assert.match(html, /<h1>TSK menu in Kokapet<\/h1>/);
-  assert.match(html, /<title>Menu &amp; prices – TSK The Spice Kitchen, Kokapet<\/title>/);
+  assert.match(html, /<title>Kokapet Menu &amp; Prices \| Biryani, Veg &amp; Non-Veg \| TSK<\/title>/);
   assert.match(html, /<link rel="canonical" href="https:\/\/example\.test\/menu\/">/);
   assert.match(html, /Chitti Garelu &amp; Natu Kodi Shorba/);
   assert.match(html, /<main id="main" data-dishes="11" data-options="18" data-sections="7">/);
