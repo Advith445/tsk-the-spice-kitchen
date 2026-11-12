@@ -53,3 +53,7 @@ Stewed apricot under a layer of silky cream, topped with chopped nuts and served
 Andhra food is famously hot. Tell your server, or mention it in your order, and the kitchen will make your dish mild, medium or proper Andhra hot.
 
 [See the full menu](/#menu) or order on Ownly from the buttons below.
+
+## From the TSK team
+
+We’re the team at TSK – The Spice Kitchen in Kokapet, Hyderabad. We share notes about our menu, dining at our restaurant and arranging catering with us.
