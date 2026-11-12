@@ -282,8 +282,12 @@ function menuLd(model, url, site) {
 
 export function renderPage(model, { site, iconLinks = '', ogImage = '', hasBlog = false, cssVersion = '0', year = new Date().getFullYear() }) {
   const url = `${site}/menu/`;
-  const title = 'Menu & prices – TSK The Spice Kitchen, Kokapet';
-  const description = 'TSK – The Spice Kitchen, Kokapet: full menu with prices and veg marks. Dum biryanis, ragi sangati, Telugu curries, kebabs, Indo-Chinese and desserts.';
+  // Apply the approved correction only while the sheet retains the previous wording.
+  model = { ...model, sections: model.sections.map((s) =>
+    s.name === 'Biryanis' && s.desc === "Fragrant rice layered with meat and whole spices, sealed and slow-cooked on dum. Regular serves one; family packs serve two to three."
+      ? { ...s, desc: "Choose vegetarian biryanis with vegetables, paneer or mushrooms, or browse egg, chicken, mutton, prawn and fish options. Regular serves one; family packs serve two to three." } : s) };
+  const title = 'Kokapet Menu & Prices | Biryani, Veg & Non-Veg | TSK';
+  const description = 'Explore TSK The Spice Kitchen’s menu and prices in Kokapet: vegetarian and non-vegetarian biryanis, Telugu curries, starters and desserts. View dishes and order.';
   const ld = [
     menuLd(model, url, site),
     {
@@ -348,7 +352,7 @@ ${hasBlog ? '      <a class="mn-link" href="/blog/">Stories</a>\n' : ''}      <a
     <nav class="mn-crumbs" aria-label="Breadcrumb"><a href="/">Home</a> / Menu</nav>
     <header class="mn-hero">
       <h1>TSK menu in Kokapet</h1>
-      <p class="mn-lede">Andhra and Telangana food, dum biryanis, kebabs and Indo-Chinese at TSK – The Spice Kitchen on Gandipet Main Road, Kokapet, Hyderabad. Open every day, 11 AM – 11 PM.</p>
+      <p class="mn-lede">Explore vegetarian and non-vegetarian food at TSK The Spice Kitchen on Gandipet Main Road, Kokapet, Hyderabad. Choose from biryanis, Andhra and Telangana curries, starters, kebabs, Indo-Chinese and desserts. Open every day, 11 AM to 11 PM.</p>
       <div class="mn-acts">
         <a class="mn-btn mn-btn--gold" href="${ORDER_URL}" target="_blank" rel="noopener">Order on Ownly</a>
         <a class="mn-btn mn-btn--line" href="/#reserve">Request a table</a>
