@@ -26,6 +26,8 @@ Thin strips of chicken fried crisp and tossed with curry leaves, green chillies 
 
 Soft balls of finger millet and rice with a fiery country-chicken curry. Break the sangati with your fingers and dip it in the pulusu.
 
+Our [ragi sangati with natukodi pulusu guide](/blog/ragi-sangati-natukodi-pulusu-kokapet/) explains the pairing and what to ask before ordering.
+
 ![Two ragi sangati balls beside a bowl of naatukodi pulusu](/blog/media/ragi.webp)
 
 ## Karimnagar: Fried Wings
@@ -52,7 +54,7 @@ Stewed apricot under a layer of silky cream, topped with chopped nuts and served
 
 Andhra food is famously hot. Tell your server, or mention it in your order, and the kitchen will make your dish mild, medium or proper Andhra hot.
 
-[See the full menu](/#menu) or order on Ownly from the buttons below.
+[See the full menu](/menu/) or order on Ownly from the buttons below.
 
 ## From the TSK team
 
