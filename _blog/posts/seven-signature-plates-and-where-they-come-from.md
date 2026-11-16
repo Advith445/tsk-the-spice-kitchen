@@ -56,6 +56,8 @@ Andhra food is famously hot. Tell your server, or mention it in your order, and 
 
 [See the full menu](/menu/) or order on Ownly from the buttons below.
 
+<section class="cta" style="background:#f1e8d8;border:1px solid #d9c6a7;border-radius:12px;padding:24px;margin:32px 0;"><h2>Reserve a table and get 20% off your total bill</h2><p>Book through our website and send your table request on WhatsApp to get <strong>20% off your total bill, with no minimum order</strong>. Choose your preferred day, time and guest count. Your table is booked only after our team confirms your request. For groups of 10 or more, please <a href="tel:+919949051777">call +91 99490 51777</a> to discuss seating.</p><p class="cta-action"><a href="https://tskthespicekitchenkokapet.in/#reserve" style="display:inline-block;background:#5d1607;color:#fff;padding:11px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Reserve a table</a></p></section>
+
 ## From the TSK team
 
 We’re the team at TSK – The Spice Kitchen in Kokapet, Hyderabad. We share notes about our menu, dining at our restaurant and arranging catering with us.
