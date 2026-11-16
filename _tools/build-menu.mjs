@@ -402,6 +402,7 @@ ${hasBlog ? '        <li><a href="/blog/">From Our Kitchen</a></li>\n' : ''}    
     <span><a href="/privacy.html">Privacy Policy</a></span>
   </div>
 </footer>
+<script src="/analytics.js" defer></script>
 </body>
 </html>
 `;

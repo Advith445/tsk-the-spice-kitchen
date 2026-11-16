@@ -284,6 +284,7 @@ const foot = (withVideo) => `<footer class="bl-foot">
   </div>
 </footer>
 ${withVideo ? VIDEO_SCRIPT : ''}
+<script src="/analytics.js" defer></script>
 </body>
 </html>
 `;
