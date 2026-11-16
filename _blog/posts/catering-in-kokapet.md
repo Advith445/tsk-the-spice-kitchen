@@ -10,6 +10,15 @@ published: true
 <p style="font-size:14px;line-height:1.5;color:#6e6254;">A selection of food from our restaurant menu. Photo illustrates our dishes, not a fixed catering package.</p>
 <p>With a 4.6+ Google rating, we focus on flavour, quality food, generous quantities and attentive customer service. Menu choices and charges depend on your order quantity, while delivery, buffet setup, serving equipment and staff can be discussed for each event.</p>
 <p>Order at least one day ahead; three days’ notice is preferred. Share your date, location and guest count for a personalised quote.</p>
+<aside aria-label="Catering enquiry near introduction" style="background:#f0e7d6;border:1px solid #dcccac;padding:18px;border-radius:10px;margin:20px 0;font-size:16px;line-height:1.6;">
+<p style="font-family:Georgia,serif;font-weight:700;font-size:20px;line-height:1.3;margin:0 0 14px;">Ready to discuss your event?</p>
+<div style="display:grid;gap:10px;">
+<a href="https://wa.me/919398693051?text=Hi%20TSK%20Kokapet%2C%20I%27d%20like%20a%20catering%20quote.%0AEvent%20date%20and%20serving%20time%3A%0ANumber%20of%20guests%3A%0ADelivery%20area%3A%0AOccasion%3A%0AVeg%2Fnon-veg%20preferences%3A%0APreferred%20dishes%3A%0ADelivery%2Fsetup%2Fequipment%2Fstaff%20requirements%3A" style="display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;box-sizing:border-box;background:#774420;color:#fff;border:1px solid #774420;border-radius:6px;font-size:14px;font-weight:700;line-height:1.45;padding:12px 14px;text-decoration:none;text-align:center;">Ask for a catering quote on WhatsApp</a>
+<span>or</span>
+<a href="tel:+919949051777" style="display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;box-sizing:border-box;background:transparent;color:#481c10;border:1px solid #774420;border-radius:6px;font-size:14px;font-weight:700;line-height:1.45;padding:12px 14px;text-decoration:none;text-align:center;">call +91 99490 51777</a>
+</div>
+<p style="margin:8px 0 0;">Share what you know so far; an enquiry does not confirm an order.</p>
+</aside>
 <h2>What can you order for catering?</h2>
 <p>Our catering choices include biryanis, pulaos, kebabs and Telugu specials from Andhra Pradesh and Telangana. We also take bulk biryani orders. Both vegetarian and non-vegetarian choices are available; we’ll confirm the dishes for your date and quantity when preparing your quote.</p>
 <p>Start with <a href="https://tskthespicekitchenkokapet.in/menu/">our current restaurant menu</a> to share the flavours you enjoy. It is a useful starting point for a conversation, rather than a fixed catering package or catering price list. If a particular dish is essential to your event, mention it before finalising the order.</p>
