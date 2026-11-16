@@ -123,6 +123,9 @@
     if (e.defaultPrevented) return;
     if (url.protocol === 'tel:') measure('call_clicked', placement);
     else if (url.hostname === 'wa.me' || url.hostname === 'api.whatsapp.com') {
+      // Article share links open WhatsApp too; they are not enquiries to TSK.
+      const recipient = url.hostname === 'wa.me' ? url.pathname.replace(/^\/+|\/+$/g, '') : url.searchParams.get('phone');
+      if (recipient !== '919398693051') return;
       const cateringPage = location.pathname === '/blog/catering-in-kokapet/';
       const catering = link.closest('#catering,.catering,#catering-popup') || cateringPage;
       measure(link.id === 'bookSend' ? 'reservation_request_clicked' : catering ? 'catering_enquiry_clicked' : 'whatsapp_clicked', placement);
