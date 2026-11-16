@@ -101,7 +101,7 @@
       }
     }
     notice.hidden = true;
-    settings.focus();
+    settings.focus({ preventScroll: true });
   });
   const choice = read(localStorage, CHOICE);
   notice.hidden = choice === 'granted' || choice === 'denied' || read(sessionStorage, DISMISSED) === 'yes';
